@@ -68,6 +68,7 @@ class TerrainBuilder {
         SITE_LAYOUT.soilLots.forEach((s) => this.buildPolygon(group, s, this.materials.soil, TERRAIN_Y.soil));
         this.buildLakes(group);
         this.buildPlateaus(group);
+        this.buildGroupLabels(group);
         this.buildRoads(group);
         this.buildRoundabouts(group);
         this.buildGates(group);
@@ -143,6 +144,66 @@ class TerrainBuilder {
             wall.position.set(r.x, 0.5, r.z);
             group.add(wall);
         });
+    }
+
+    // Placa flutuante sobre cada platô: o número do grupo, legível de qualquer ângulo.
+    buildGroupLabels(group) {
+        Object.keys(SITE_LAYOUT.groups).forEach((id) => {
+            const info = PARQUE_FIRENZE_DATA.grupos[id];
+            const r = SITE_LAYOUT.plateauRect(id);
+            const tresDorm = info.tipologia.indexOf('3') === 0;
+            const tex = this.groupLabelTexture(id, info, tresDorm);
+
+            const sprite = new THREE.Sprite(new THREE.SpriteMaterial({
+                map: tex,
+                transparent: true,
+                depthWrite: false
+            }));
+            const roof = SITE_LAYOUT.plateauTop + info.andaresPorTorre * 0.85 + 16;
+            sprite.position.set(r.x, roof, r.z);
+            sprite.scale.set(52, 28, 1);
+            sprite.renderOrder = 3;
+            group.add(sprite);
+        });
+    }
+
+    groupLabelTexture(id, info, tresDorm) {
+        const canvas = document.createElement('canvas');
+        canvas.width = 512;
+        canvas.height = 280;
+        const c = canvas.getContext('2d');
+        const bg = tresDorm ? '#b91c1c' : '#1d4ed8';
+
+        c.fillStyle = bg;
+        this.roundRect(c, 16, 16, 480, 248, 36);
+        c.fill();
+        c.lineWidth = 10;
+        c.strokeStyle = '#ffffff';
+        this.roundRect(c, 16, 16, 480, 248, 36);
+        c.stroke();
+
+        c.fillStyle = '#ffffff';
+        c.textAlign = 'center';
+        c.font = 'bold 46px "Segoe UI", sans-serif';
+        c.fillText('GRUPO', 256, 78);
+        c.font = 'bold 132px "Segoe UI", sans-serif';
+        c.fillText(String(id), 256, 200);
+        c.font = 'bold 32px "Segoe UI", sans-serif';
+        c.fillText(info.andaresPorTorre + ' andares  •  ' + info.tipologia, 256, 242);
+
+        const tex = new THREE.CanvasTexture(canvas);
+        tex.anisotropy = 4;
+        return tex;
+    }
+
+    roundRect(c, x, y, w, h, radius) {
+        c.beginPath();
+        c.moveTo(x + radius, y);
+        c.arcTo(x + w, y, x + w, y + h, radius);
+        c.arcTo(x + w, y + h, x, y + h, radius);
+        c.arcTo(x, y + h, x, y, radius);
+        c.arcTo(x, y, x + w, y, radius);
+        c.closePath();
     }
 
     // Faixa plana que acompanha a curva, deslocada `offset` para o lado sul/direito da via.

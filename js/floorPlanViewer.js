@@ -4,6 +4,13 @@
  * e a planta de 80m² (2 Dormitórios), com paredes rebaixadas, piso e mobiliário.
  */
 
+// Pavimentos tipo reais: ímpares (G13/15/17, 3 dorm.) e pares (G12/14/16/18, 2 dorm.).
+const FLOOR_PLAN_MODELS = {
+    '3dorm': 'public/models/plantas/impares_pavimento_tipo.glb',
+    '2dorm': 'public/models/plantas/pares_pavimento_tipo.glb'
+};
+const FLOOR_PLAN_CUT_HEIGHT = 1.4;
+
 class FloorPlanViewer {
     constructor(containerId) {
         this.container = document.getElementById(containerId);
@@ -19,6 +26,8 @@ class FloorPlanViewer {
         this.renderer.setSize(this.container.clientWidth, this.container.clientHeight);
         this.renderer.shadowMap.enabled = true;
         this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        this.renderer.localClippingEnabled = true;
+        this.renderer.outputEncoding = THREE.sRGBEncoding;
         this.container.appendChild(this.renderer.domElement);
 
         this.controls = new THREE.OrbitControls(this.camera, this.renderer.domElement);
@@ -32,6 +41,10 @@ class FloorPlanViewer {
         this.loadApartment('3dorm');
 
         window.addEventListener('resize', () => this.onResize());
+        if (window.ResizeObserver) {
+            this.resizeObserver = new ResizeObserver(() => this.onResize());
+            this.resizeObserver.observe(this.container);
+        }
         this.animate = this.animate.bind(this);
         requestAnimationFrame(this.animate);
     }
@@ -41,10 +54,16 @@ class FloorPlanViewer {
         this.scene.add(ambientLight);
 
         const dirLight = new THREE.DirectionalLight(0xffffff, 0.9);
-        dirLight.position.set(12, 20, 15);
+        dirLight.position.set(18, 40, 24);
         dirLight.castShadow = true;
-        dirLight.shadow.mapSize.width = 1024;
-        dirLight.shadow.mapSize.height = 1024;
+        dirLight.shadow.mapSize.width = 2048;
+        dirLight.shadow.mapSize.height = 2048;
+        dirLight.shadow.camera.left = -25;
+        dirLight.shadow.camera.right = 25;
+        dirLight.shadow.camera.top = 25;
+        dirLight.shadow.camera.bottom = -25;
+        dirLight.shadow.camera.far = 120;
+        dirLight.shadow.bias = -0.0005;
         this.scene.add(dirLight);
 
         const fillLight = new THREE.DirectionalLight(0x38bdf8, 0.3);
@@ -59,24 +78,100 @@ class FloorPlanViewer {
         if (w === 0 || h === 0) return;
         this.camera.aspect = w / h;
         this.camera.updateProjectionMatrix();
-        this.renderer.setSize(w, h);
+        this.renderer.setSize(w, h, false);
     }
 
     loadApartment(type = '3dorm') {
+        this.requestedType = type;
         if (this.currentApartmentGroup) {
             this.scene.remove(this.currentApartmentGroup);
+            this.currentApartmentGroup = null;
         }
 
+        const url = FLOOR_PLAN_MODELS[type];
+        if (!url || !THREE.GLTFLoader) {
+            this.showProcedural(type);
+            return;
+        }
+
+        this.planCache = this.planCache || {};
+        if (!this.planCache[type]) {
+            this.planCache[type] = new Promise((resolve, reject) => {
+                new THREE.GLTFLoader().load(url, (gltf) => resolve(this.preparePlan(gltf.scene)), undefined, reject);
+            });
+        }
+
+        this.planCache[type].then((plan) => {
+            if (this.requestedType !== type) return;
+            this.showGroup(plan);
+            this.framePlan(plan);
+        }).catch((err) => {
+            console.warn('Planta GLB indisponível, usando modelo simplificado:', err);
+            if (this.requestedType === type) this.showProcedural(type);
+        });
+    }
+
+    showGroup(group) {
+        if (this.currentApartmentGroup) this.scene.remove(this.currentApartmentGroup);
+        this.currentApartmentGroup = group;
+        this.scene.add(group);
+    }
+
+    showProcedural(type) {
         const aptGroup = new THREE.Group();
+        if (type === '3dorm') this.build3DormApartment(aptGroup);
+        else this.build2DormApartment(aptGroup);
+        this.showGroup(aptGroup);
+        this.controls.target.set(0, 0, 0);
+        this.camera.position.set(0, 22, 18);
+    }
 
-        if (type === '3dorm') {
-            this.build3DormApartment(aptGroup);
-        } else {
-            this.build2DormApartment(aptGroup);
-        }
+    // Centraliza o pavimento na origem e corta as paredes na altura do corte de planta.
+    preparePlan(scene) {
+        const box = new THREE.Box3().setFromObject(scene);
+        const center = box.getCenter(new THREE.Vector3());
+        scene.position.set(-center.x, -box.min.y, -center.z);
 
-        this.currentApartmentGroup = aptGroup;
-        this.scene.add(aptGroup);
+        const holder = new THREE.Group();
+        holder.add(scene);
+        holder.userData.size = box.getSize(new THREE.Vector3());
+
+        const cut = [new THREE.Plane(new THREE.Vector3(0, -1, 0), FLOOR_PLAN_CUT_HEIGHT)];
+        const fixed = new Map();
+        scene.traverse((obj) => {
+            if (!obj.isMesh) return;
+            obj.castShadow = true;
+            obj.receiveShadow = true;
+            const mats = Array.isArray(obj.material) ? obj.material : [obj.material];
+            const next = mats.map((m) => {
+                if (fixed.has(m)) return fixed.get(m);
+                const mat = m.clone();
+                mat.clippingPlanes = cut;
+                mat.side = THREE.DoubleSide;
+                if (mat.transmission) {
+                    mat.transmission = 0;
+                    mat.transparent = true;
+                    mat.opacity = Math.min(mat.opacity, 0.35);
+                }
+                fixed.set(m, mat);
+                return mat;
+            });
+            obj.material = Array.isArray(obj.material) ? next : next[0];
+        });
+        return holder;
+    }
+
+    framePlan(plan) {
+        const size = plan.userData.size;
+        const span = Math.max(size.x, size.z);
+        this.controls.target.set(0, 0, 0);
+        this.camera.position.set(0, span * 1.3, span * 0.85);
+        this.camera.near = 0.1;
+        this.camera.far = span * 10;
+        this.camera.updateProjectionMatrix();
+        this.controls.maxDistance = span * 3;
+        this.controls.minDistance = 2;
+        this.controls.update();
     }
 
     build3DormApartment(group) {
@@ -97,7 +192,7 @@ class FloorPlanViewer {
         const livingFloorGeo = new THREE.PlaneGeometry(8, 7);
         livingFloorGeo.rotateX(-Math.PI / 2);
         const livingFloor = new THREE.Mesh(livingFloorGeo, woodFloorMat);
-        livingFloor.position.set(-1, 0, 1.5);
+        livingFloor.position.set(-1, 0.02, 1.5);
         livingFloor.receiveShadow = true;
         group.add(livingFloor);
 
@@ -105,7 +200,7 @@ class FloorPlanViewer {
         const roomsFloorGeo = new THREE.PlaneGeometry(6, 11);
         roomsFloorGeo.rotateX(-Math.PI / 2);
         const roomsFloor = new THREE.Mesh(roomsFloorGeo, woodFloorMat);
-        roomsFloor.position.set(4, 0, -0.5);
+        roomsFloor.position.set(4, 0.04, -0.5);
         roomsFloor.receiveShadow = true;
         group.add(roomsFloor);
 
@@ -113,7 +208,7 @@ class FloorPlanViewer {
         const kitchenFloorGeo = new THREE.PlaneGeometry(5, 4);
         kitchenFloorGeo.rotateX(-Math.PI / 2);
         const kitchenFloor = new THREE.Mesh(kitchenFloorGeo, tileFloorMat);
-        kitchenFloor.position.set(-2.5, 0, -4);
+        kitchenFloor.position.set(-2.5, 0.03, -4);
         kitchenFloor.receiveShadow = true;
         group.add(kitchenFloor);
 
@@ -121,7 +216,7 @@ class FloorPlanViewer {
         const balconyFloorGeo = new THREE.PlaneGeometry(8, 3.2);
         balconyFloorGeo.rotateX(-Math.PI / 2);
         const balconyFloor = new THREE.Mesh(balconyFloorGeo, balconyFloorMat);
-        balconyFloor.position.set(-1, 0, 6.6);
+        balconyFloor.position.set(-1, 0.02, 6.6);
         balconyFloor.receiveShadow = true;
         group.add(balconyFloor);
 
@@ -255,7 +350,7 @@ class FloorPlanViewer {
         const floorGeo = new THREE.PlaneGeometry(10, 10);
         floorGeo.rotateX(-Math.PI / 2);
         const floor = new THREE.Mesh(floorGeo, woodFloorMat);
-        floor.position.set(0, 0, 0);
+        floor.position.set(0, 0.04, 0);
         floor.receiveShadow = true;
         group.add(floor);
 
@@ -263,7 +358,7 @@ class FloorPlanViewer {
         const balcGeo = new THREE.PlaneGeometry(6, 2.4);
         balcGeo.rotateX(-Math.PI / 2);
         const balc = new THREE.Mesh(balcGeo, balconyFloorMat);
-        balc.position.set(-2, 0, 4.2);
+        balc.position.set(-2, 0.06, 4.2);
         group.add(balc);
 
         // Paredes
@@ -305,7 +400,7 @@ class FloorPlanViewer {
         group.add(bbq);
 
         const base = new THREE.Mesh(new THREE.BoxGeometry(12, 0.4, 12), new THREE.MeshStandardMaterial({ color: 0x020617 }));
-        base.position.y = -0.2;
+        base.position.y = -0.35;
         group.add(base);
     }
 

@@ -194,6 +194,7 @@ const PARQUE_FIRENZE_DATA = {
     plantas: {
         tipo3: {
             nome: "Apartamento Tipo 3 Dormitórios (Padrão 125m² - 135m²)",
+            pavimento: "Pavimento tipo dos grupos ímpares (13, 15 e 17) • 4 apartamentos por andar",
             areaPrivativa: "128,28 m² - 135,29 m²",
             dormitorios: 3,
             suites: "1 suíte com closet privativo",
@@ -215,6 +216,7 @@ const PARQUE_FIRENZE_DATA = {
         },
         tipo2: {
             nome: "Apartamento Tipo 2 Dormitórios (Padrão 80m² - 82m²)",
+            pavimento: "Pavimento tipo dos grupos pares (12, 14, 16 e 18) • 8 apartamentos por andar",
             areaPrivativa: "79,84 m² - 82,00 m²",
             dormitorios: 2,
             suites: "Opção com 1 suíte",

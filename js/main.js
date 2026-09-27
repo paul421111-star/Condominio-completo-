@@ -666,6 +666,8 @@ class ParqueFirenzeApp {
         if (openPlanBtn && modalFloorPlan) {
             openPlanBtn.addEventListener('click', () => {
                 modalFloorPlan.classList.add('active');
+                const activeTab = document.querySelector('.tab-plan-btn.active');
+                this.showPlanSpecs(activeTab ? activeTab.dataset.plan : '3dorm');
                 setTimeout(() => this.floorPlanViewer.onResize(), 100);
             });
         }
@@ -680,6 +682,7 @@ class ParqueFirenzeApp {
                 document.querySelectorAll('.tab-plan-btn').forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
                 this.floorPlanViewer.loadApartment(btn.dataset.plan);
+                this.showPlanSpecs(btn.dataset.plan);
             });
         });
 
@@ -689,6 +692,24 @@ class ParqueFirenzeApp {
                 document.getElementById('tower-details-card').classList.add('hidden');
             });
         }
+    }
+
+    showPlanSpecs(type) {
+        const spec = PARQUE_FIRENZE_DATA.plantas[type === '2dorm' ? 'tipo2' : 'tipo3'];
+        const el = document.getElementById('plan-specs-text');
+        if (!spec || !el) return;
+        const items = spec.ambientes.map((a) => `<li>${a}</li>`).join('');
+        el.innerHTML = `
+            <h4 style="color: #38bdf8; margin-bottom: 6px;">${spec.nome}</h4>
+            <p style="font-size: 12px; color: #fbbf24; margin-bottom: 8px;">${spec.pavimento}</p>
+            <div style="font-size: 13px; line-height: 1.5; color: #cbd5e1;">
+                <p><strong>Área Privativa:</strong> ${spec.areaPrivativa}</p>
+                <p><strong>Configuração:</strong> ${spec.dormitorios} Dormitórios (${spec.suites})</p>
+                <p><strong>Vagas de Garagem:</strong> ${spec.vagasGaragem}</p>
+                <p><strong>Destaque Arquitetônico:</strong> ${spec.destaque}</p>
+                <div style="margin-top: 8px;"><strong>Ambientes Principais:</strong></div>
+                <ul style="padding-left: 18px; margin-top: 4px; font-size: 12px; color: #94a3b8;">${items}</ul>
+            </div>`;
     }
 
     towerPickList() {

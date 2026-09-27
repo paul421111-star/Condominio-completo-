@@ -522,20 +522,33 @@ body, html {
 
 .modal-body {
     display: flex;
-    flex: 1;
-    height: 580px;
+    flex: 1 1 auto;
+    min-height: 480px;
     overflow: hidden;
 }
 
 #floorplan-canvas {
-    flex: 1.4;
-    height: 100%;
+    flex: 1.4 1 0;
+    align-self: stretch;
+    min-width: 0;
+    min-height: 420px;
     background: #090d16;
     position: relative;
+    overflow: hidden;
+}
+
+#floorplan-canvas canvas {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
 }
 
 .floorplan-sidebar {
-    flex: 1;
+    flex: 0 0 360px;
+    width: 360px;
+    max-width: 42%;
     padding: 24px;
     background: #111827;
     border-left: 1px solid var(--border-glass);
@@ -864,6 +877,11 @@ body, html {
         flex: none;
         height: 45vh;
         min-height: 260px;
+    }
+    .floorplan-sidebar {
+        flex: 1 1 auto;
+        width: auto;
+        max-width: none;
     }
     .modal-header h2 {
         font-size: 16px;
