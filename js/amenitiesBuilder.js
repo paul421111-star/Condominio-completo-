@@ -49,7 +49,8 @@ class AmenitiesBuilder {
             poolEdge: new THREE.MeshStandardMaterial({ color: 0xf8fafc, roughness: 0.4 }),
             court: new THREE.MeshStandardMaterial({ map: new THREE.CanvasTexture(courtCanvas), roughness: 0.6 }),
             fence: new THREE.MeshBasicMaterial({ color: 0x64748b, wireframe: true }),
-            canopy: new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, flatShading: true }),
+            canopy: new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9, flatShading: true }),
+            treeTrunk: new THREE.MeshStandardMaterial({ color: 0x5b4636, roughness: 0.95 }),
             palmTrunk: new THREE.MeshStandardMaterial({ color: 0xb8ad9a, roughness: 0.8 }),
             palmFrond: new THREE.MeshStandardMaterial({ color: 0x3f8f3a, roughness: 0.7, side: THREE.DoubleSide }),
             lampPost: new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.6, roughness: 0.3 }),
@@ -135,13 +136,14 @@ class AmenitiesBuilder {
         for (const [name, path] of Object.entries(L.roads)) {
             if (SiteGeo.distanceToPath(x, z, path) < clearance[name]) return true;
         }
+        if (this.marketSpots().some((p) => Math.hypot(x - p.x, z - p.z) < 14)) return true;
         return L.roundabouts.some((rb) => Math.hypot(x - rb.x, z - rb.z) < 26);
     }
 
     buildForest(group) {
         const trees = [];
         const r = this.rand;
-        const spacing = 5.2;
+        const spacing = 5.8;
 
         SITE_LAYOUT.forests.forEach((poly) => {
             const b = SiteGeo.polygonBounds(poly);
@@ -187,47 +189,167 @@ class AmenitiesBuilder {
             }
         }
 
-        const geo = new THREE.IcosahedronGeometry(1, 1);
-        const mesh = new THREE.InstancedMesh(geo, this.materials.canopy, trees.length);
+        this.forestMesh = this.plantTrees(group, trees);
+    }
+
+    // Espécies da mata: copa larga (maioria), emergente alta, cônica e ipê/quaresmeira floridos.
+    treeSpecies() {
+        if (this.species) return this.species;
+        const r = this.seededRandom(77);
+        this.species = [
+            { name: 'larga', weight: 0.55, geo: this.createCanopyGeometry(r, 5, 1.0, 0.75), height: [3.2, 5.0], trunk: 0.9 },
+            { name: 'emergente', weight: 0.18, geo: this.createCanopyGeometry(r, 4, 0.7, 1.35), height: [6.0, 8.5], trunk: 1.4 },
+            { name: 'conica', weight: 0.15, geo: this.createConicalGeometry(r), height: [5.0, 7.0], trunk: 0.6 },
+            { name: 'florida', weight: 0.12, geo: this.createCanopyGeometry(r, 4, 1.05, 0.7), height: [3.4, 4.6], trunk: 1.0, flowering: true }
+        ];
+        return this.species;
+    }
+
+    // Copa formada por vários lobos irregulares, mais escura na base (sombra interna da folhagem).
+    createCanopyGeometry(r, lobes, spread, stretch) {
+        const parts = [];
+        for (let i = 0; i < lobes; i++) {
+            const g = new THREE.IcosahedronGeometry(1, i === 0 ? 1 : 0).toNonIndexed();
+            const a = (i / lobes) * Math.PI * 2 + r();
+            const dist = i === 0 ? 0 : spread * (0.45 + r() * 0.35);
+            const size = i === 0 ? 1 : 0.62 + r() * 0.3;
+            const p = g.attributes.position;
+            for (let v = 0; v < p.count; v++) {
+                const k = 1 + (r() - 0.5) * 0.28;
+                p.setXYZ(v, p.getX(v) * k, p.getY(v) * k * 0.82, p.getZ(v) * k);
+            }
+            g.scale(size, size * stretch, size);
+            g.translate(Math.cos(a) * dist, (i === 0 ? 0 : (r() - 0.3) * 0.5) * stretch, Math.sin(a) * dist);
+            parts.push(g);
+        }
+        return this.finishFoliage(parts);
+    }
+
+    createConicalGeometry(r) {
+        const parts = [];
+        const tiers = 3;
+        for (let i = 0; i < tiers; i++) {
+            const g = new THREE.ConeGeometry(1.1 - i * 0.28, 1.3, 9, 1).toNonIndexed();
+            const p = g.attributes.position;
+            for (let v = 0; v < p.count; v++) {
+                const k = 1 + (r() - 0.5) * 0.2;
+                p.setXYZ(v, p.getX(v) * k, p.getY(v), p.getZ(v) * k);
+            }
+            g.translate(0, i * 0.75 - 0.4, 0);
+            parts.push(g);
+        }
+        return this.finishFoliage(parts);
+    }
+
+    finishFoliage(parts) {
+        let total = 0;
+        parts.forEach((g) => { total += g.attributes.position.count; });
+        const pos = new Float32Array(total * 3);
+        let o = 0;
+        parts.forEach((g) => {
+            pos.set(g.attributes.position.array, o);
+            o += g.attributes.position.array.length;
+            g.dispose();
+        });
+        const geo = new THREE.BufferGeometry();
+        geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+        geo.computeBoundingBox();
+        const { min, max } = geo.boundingBox;
+        const colors = new Float32Array(total * 3);
+        for (let i = 0; i < total; i++) {
+            const t = (pos[i * 3 + 1] - min.y) / (max.y - min.y || 1);
+            const shade = 0.55 + 0.45 * t;
+            colors[i * 3] = shade;
+            colors[i * 3 + 1] = shade;
+            colors[i * 3 + 2] = shade;
+        }
+        geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+        geo.translate(0, -min.y, 0);
+        geo.computeVertexNormals();
+        geo.computeBoundingSphere();
+        return geo;
+    }
+
+    plantTrees(group, trees) {
+        const r = this.rand;
+        const species = this.treeSpecies();
+        const buckets = species.map(() => []);
+        trees.forEach(([x, z]) => {
+            let pick = r();
+            let idx = 0;
+            while (idx < species.length - 1 && pick > species[idx].weight) {
+                pick -= species[idx].weight;
+                idx++;
+            }
+            buckets[idx].push([x, z]);
+        });
+
+        const greens = [0x2d5a27, 0x3a6b2e, 0x47793a, 0x2a4f28, 0x55853f, 0x3f6f35];
+        const blooms = [0xf2c230, 0xe7b416, 0xb865b5, 0xd97fc1];
         const m = new THREE.Matrix4();
         const q = new THREE.Quaternion();
         const pos = new THREE.Vector3();
         const scl = new THREE.Vector3();
         const color = new THREE.Color();
-        const greens = [0x2f5d2a, 0x3b6e2f, 0x4a7c35, 0x29522a, 0x56883c];
 
-        trees.forEach(([x, z], i) => {
-            const s = 2.6 + r() * 2.2;
-            pos.set(x, 0.3 + s * 0.8, z);
-            scl.set(s, s * (0.75 + r() * 0.35), s);
-            q.setFromAxisAngle(THREE.Object3D.DefaultUp, r() * Math.PI * 2);
-            m.compose(pos, q, scl);
-            mesh.setMatrixAt(i, m);
-            if (r() < 0.035) color.setHex(0xe8c33a);
-            else if (r() < 0.03) color.setHex(0xc06ab0);
-            else color.setHex(greens[Math.floor(r() * greens.length)]);
-            mesh.setColorAt(i, color);
+        const trunkGeo = new THREE.CylinderGeometry(0.14, 0.24, 1, 6);
+        trunkGeo.translate(0, 0.5, 0);
+        const trunks = new THREE.InstancedMesh(trunkGeo, this.materials.treeTrunk, trees.length);
+        let t = 0;
+        const meshes = [];
+
+        species.forEach((sp, si) => {
+            const list = buckets[si];
+            if (!list.length) return;
+            const mesh = new THREE.InstancedMesh(sp.geo, this.materials.canopy, list.length);
+            list.forEach(([x, z], i) => {
+                const h = sp.height[0] + r() * (sp.height[1] - sp.height[0]);
+                const trunkH = sp.trunk * (0.8 + r() * 0.5) * (h / 4);
+                const w = h * (sp.name === 'conica' ? 0.42 : sp.name === 'emergente' ? 0.5 : 0.62) * (0.85 + r() * 0.3);
+                q.setFromAxisAngle(THREE.Object3D.DefaultUp, r() * Math.PI * 2);
+                m.compose(pos.set(x, 0.3 + trunkH, z), q, scl.set(w, h * 0.55, w));
+                mesh.setMatrixAt(i, m);
+                if (sp.flowering) color.setHex(blooms[Math.floor(r() * blooms.length)]);
+                else color.setHex(greens[Math.floor(r() * greens.length)]);
+                color.offsetHSL((r() - 0.5) * 0.02, (r() - 0.5) * 0.08, (r() - 0.5) * 0.05);
+                mesh.setColorAt(i, color);
+
+                m.compose(pos.set(x, 0.3, z), q, scl.set(1 + h * 0.05, trunkH + h * 0.15, 1 + h * 0.05));
+                trunks.setMatrixAt(t++, m);
+            });
+            mesh.castShadow = true;
+            mesh.receiveShadow = true;
+            group.add(mesh);
+            meshes.push(mesh);
         });
 
-        mesh.castShadow = true;
-        mesh.receiveShadow = true;
-        group.add(mesh);
-        this.forestMesh = mesh;
+        trunks.count = t;
+        group.add(trunks);
+        return meshes[0];
     }
 
     // ---------- Palmeiras imperiais ----------
 
     createFrondGeometry() {
         const positions = [];
-        const fronds = 9;
+        const fronds = 14;
         for (let i = 0; i < fronds; i++) {
-            const a = (i / fronds) * Math.PI * 2;
+            const a = (i / fronds) * Math.PI * 2 + (i % 2) * 0.12;
             const ca = Math.cos(a);
             const sa = Math.sin(a);
-            const pts = [
-                [0, 0, -0.35], [0, 0, 0.35], [1.6, 0.35, 0], [3.4, -0.9, 0]
-            ].map(([px, py, pz]) => [px * ca - pz * sa, py, px * sa + pz * ca]);
-            positions.push(...pts[0], ...pts[2], ...pts[1], ...pts[0], ...pts[3], ...pts[2], ...pts[1], ...pts[2], ...pts[3]);
+            const lift = i % 2 ? 0.35 : 0;
+            // Folha arqueada: sobe perto do estipe e cai na ponta, larga no meio.
+            const spine = [[0, 0.1 + lift], [1.4, 0.75 + lift], [2.8, 0.35 + lift], [4.0, -0.8 + lift * 0.5]];
+            const width = [0.12, 0.55, 0.45, 0.05];
+            const L = [];
+            const R = [];
+            spine.forEach(([sx, sy], k) => {
+                L.push([sx * ca + width[k] * sa, sy, sx * sa - width[k] * ca]);
+                R.push([sx * ca - width[k] * sa, sy, sx * sa + width[k] * ca]);
+            });
+            for (let k = 0; k < spine.length - 1; k++) {
+                positions.push(...L[k], ...R[k], ...L[k + 1], ...R[k], ...R[k + 1], ...L[k + 1]);
+            }
         }
         const geo = new THREE.BufferGeometry();
         geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
@@ -309,12 +431,18 @@ class AmenitiesBuilder {
         });
     }
 
-    buildMiniMarkets(group) {
+    marketSpots() {
+        if (this._marketSpots) return this._marketSpots;
         const av = SiteGeo.samplePath(SITE_LAYOUT.roads.avenue, 4);
-        [0.2, 0.5, 0.78].forEach((t) => {
+        this._marketSpots = [0.2, 0.5, 0.78].map((t) => {
             const s = av[Math.round(t * (av.length - 1))];
-            const x = s.x - s.nx * 22;
-            const z = s.z - s.nz * 22;
+            return { s, x: s.x - s.nx * 22, z: s.z - s.nz * 22 };
+        });
+        return this._marketSpots;
+    }
+
+    buildMiniMarkets(group) {
+        this.marketSpots().forEach(({ s, x, z }) => {
             const shop = new THREE.Group();
             shop.position.set(x, 0.5, z);
             shop.rotation.y = Math.atan2(s.tx, s.tz);
