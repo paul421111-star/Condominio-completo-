@@ -1,0 +1,460 @@
+﻿<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Parque Firenze Digital Twin — 3D BIM-Lite & GIS | Cooperativa Vida Nova</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>">
+</head>
+<body>
+
+    <!-- Canvas 3D Principal da Maquete / Digital Twin -->
+    <div id="canvas-container"></div>
+
+    <!-- Tooltip Flutuante de Hover nas Torres -->
+    <div id="hover-tooltip"></div>
+
+    <!-- HUD / Interface de Controle e Informações -->
+    <div id="hud-container">
+        
+        <!-- Top Section com Header e Barra de Navegação -->
+        <div class="hud-top-section">
+            <header class="header-bar interactive">
+                <div class="brand-container">
+                    <div class="brand-badge">CHVN</div>
+                    <div class="brand-title">
+                        <h1>PARQUE FIRENZE DIGITAL TWIN</h1>
+                        <p>Cooperativa Habitacional Vida Nova • Embu das Artes / SP</p>
+                    </div>
+                </div>
+
+                <!-- Métricas Oficiais -->
+                <div class="metrics-strip">
+                    <div class="metric-item">
+                        <div class="metric-num" id="total-torres-count">45</div>
+                        <div class="metric-lbl">Torres</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-num">8.400</div>
+                        <div class="metric-lbl">Apartamentos</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-num">7</div>
+                        <div class="metric-lbl">Subcondomínios</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-num">28 e 36</div>
+                        <div class="metric-lbl">Andares</div>
+                    </div>
+                    <div class="metric-item">
+                        <div class="metric-num">2,0 km</div>
+                        <div class="metric-lbl">Ciclovia & Pista</div>
+                    </div>
+                </div>
+
+                <!-- Alternador de Motor Gráfico e Modos de Luz -->
+                <div class="header-actions">
+                    <button id="btn-toggle-left-sidebar" class="mode-btn mode-btn-outline active" title="Alternar Painel Navegador / Árvore">
+                        🗺️ <span class="btn-label">Navegador</span>
+                    </button>
+                    <button id="btn-toggle-glb" class="mode-btn mode-btn-outline mode-btn-accent" title="Alterna entre Geometria Otimizada e Modelos GLB Oficiais">
+                        📦 <span id="glb-mode-label" class="btn-label">GLB Real</span>
+                    </button>
+
+                    <!-- Modos de Iluminação da Maquete -->
+                    <div class="lighting-modes">
+                        <button class="mode-btn active" data-mode="day" title="Dia Ensolarado">☀️ <span class="btn-label">Dia</span></button>
+                        <button class="mode-btn" data-mode="sunset" title="Pôr do Sol">🌅 <span class="btn-label">Crepúsculo</span></button>
+                        <button class="mode-btn" data-mode="night" title="Noite com Iluminação">🌙 <span class="btn-label">Noite</span></button>
+                        <button class="mode-btn" data-mode="maquette" title="Luz de Estande da Maquete Física">🏛️ <span class="btn-label">Estande</span></button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Barra de Navegação de Câmeras e Modos Operacionais -->
+            <nav class="camera-toolbar interactive">
+                <button class="nav-btn active" data-view="general">🚁 Masterplan</button>
+                <button class="nav-btn" data-view="g13">🏢 Grupo 13<span class="hide-sm">(36 And.)</span></button>
+                <button class="nav-btn" data-view="g15">🏢 Grupo 15<span class="hide-sm">(36 And.)</span></button>
+                <button class="nav-btn" data-view="g17">🏢 Grupo 17<span class="hide-sm">(36 And.)</span></button>
+                <button class="nav-btn" data-view="g12">🏢 Grupo 12<span class="hide-sm">(28 And.)</span></button>
+                <button class="nav-btn" data-view="g18">🏢 Grupo 18<span class="hide-sm">(Represa)</span></button>
+                <button class="nav-btn" data-view="lake">🌊 Bacia & Lago</button>
+                <button class="nav-btn" data-view="gate">🚗 Portarias<span class="hide-sm">& BR-116</span></button>
+                <button class="nav-btn" data-view="status-obra">🏗️ Obra<span class="hide-sm">(Heatmap)</span></button>
+                <button class="nav-btn" data-view="ocorrencias">⚠️ Ocorrências</button>
+            </nav>
+        </div>
+
+        <!-- SIDEBAR ESQUERDA: NAVEGADOR DE ESTRUTURA & CAMADAS -->
+        <aside id="left-sidebar" class="interactive">
+            <div class="sidebar-search-box">
+                <input type="text" id="global-search-input" class="search-input" placeholder="🔍 Buscar grupo, bloco, andar, apto...">
+            </div>
+
+            <div class="sidebar-scroll-area">
+                <!-- Seção 1: Hierarquia de Grupos -->
+                <div>
+                    <div class="section-label">
+                        <span>ESTRUTURA FÍSICA</span>
+                        <span class="badge-tag">7 GRUPOS</span>
+                    </div>
+                    <ul class="hierarchy-list" id="groups-hierarchy-list">
+                        <li class="hierarchy-item" data-group="13">
+                            <span>🏢 Grupo 13 (Av. João Paulo I)</span>
+                            <span class="badge-tag" style="color: #10b981;">36 AND</span>
+                        </li>
+                        <li class="hierarchy-item" data-group="15">
+                            <span>🏢 Grupo 15 (Av. João Paulo I)</span>
+                            <span class="badge-tag" style="color: #f59e0b;">36 AND</span>
+                        </li>
+                        <li class="hierarchy-item" data-group="17">
+                            <span>🏢 Grupo 17 (Av. João Paulo I)</span>
+                            <span class="badge-tag" style="color: #14b8a6;">36 AND</span>
+                        </li>
+                        <li class="hierarchy-item" data-group="12">
+                            <span>🏢 Grupo 12 (Estr. São Judas)</span>
+                            <span class="badge-tag" style="color: #3b82f6;">28 AND</span>
+                        </li>
+                        <li class="hierarchy-item" data-group="14">
+                            <span>🏢 Grupo 14 (Estr. São Judas)</span>
+                            <span class="badge-tag" style="color: #6366f1;">28 AND</span>
+                        </li>
+                        <li class="hierarchy-item" data-group="16">
+                            <span>🏢 Grupo 16 (Estr. São Judas)</span>
+                            <span class="badge-tag" style="color: #ec4899;">28 AND</span>
+                        </li>
+                        <li class="hierarchy-item" data-group="18">
+                            <span>🏢 Grupo 18 (Margem Lago)</span>
+                            <span class="badge-tag" style="color: #8b5cf6;">28 AND</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- Seção 2: Seletor de Andar (Slice Mode) -->
+                <div id="floor-slice-section" style="background: rgba(15, 23, 42, 0.4); padding: 10px; border-radius: 8px;">
+                    <div class="section-label">
+                        <span>ISOLAR ANDAR (FATIA / SLICE)</span>
+                        <span id="active-floor-label" class="badge-tag" style="color: #38bdf8;">INTEIRO</span>
+                    </div>
+                    <input type="range" id="floor-range-slider" min="1" max="36" value="36" style="width: 100%; accent-color: var(--primary); cursor: pointer;">
+                    <div style="display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 4px;">
+                        <span>1º Pav.</span>
+                        <span id="slider-current-val">Pavimento 36</span>
+                        <span>Cobertura</span>
+                    </div>
+                    <button id="btn-reset-floor-slice" class="nav-btn" style="width: 100%; margin-top: 8px; justify-content: center; font-size: 11px; padding: 4px 8px;">
+                        Restaurar Torre Completa
+                    </button>
+                </div>
+
+                <!-- Seção 3: Controle de Camadas (Layers) -->
+                <div>
+                    <div class="section-label">CAMADAS VISUAIS</div>
+                    <div class="layer-toggle-list">
+                        <label class="layer-toggle-item">
+                            <span>🏢 Edifícios e Torres</span>
+                            <input type="checkbox" id="layer-buildings" checked>
+                        </label>
+                        <label class="layer-toggle-item">
+                            <span>🚗 Vias Internas e Ciclovia</span>
+                            <input type="checkbox" id="layer-roads" checked>
+                        </label>
+                        <label class="layer-toggle-item">
+                            <span>🌳 Vegetação e Paisagismo</span>
+                            <input type="checkbox" id="layer-trees" checked>
+                        </label>
+                        <label class="layer-toggle-item">
+                            <span>🏊 Áreas Comuns (Piscinas/Quadras)</span>
+                            <input type="checkbox" id="layer-amenities" checked>
+                        </label>
+                        <label class="layer-toggle-item">
+                            <span>🌊 Bacia de Retenção / Represa</span>
+                            <input type="checkbox" id="layer-lake" checked>
+                        </label>
+                        <label class="layer-toggle-item">
+                            <span>🚧 Portarias & Cancelas</span>
+                            <input type="checkbox" id="layer-gates" checked>
+                        </label>
+                        <label class="layer-toggle-item">
+                            <span>⚠️ Pins de Ocorrências 3D</span>
+                            <input type="checkbox" id="layer-occurrences" checked>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- CARTÃO FLUTUANTE DE INSPEÇÃO MULTI-ABA (DIREITO) -->
+        <aside id="tower-details-card" class="interactive hidden">
+            <div class="card-header">
+                <div class="card-title">
+                    <h3 id="detail-tower-title">Grupo 13 - Bloco A</h3>
+                    <span id="detail-status-badge" class="badge-status">Cooperativa Vida Nova</span>
+                </div>
+                <button id="btn-close-sidebar" class="close-btn" title="Fechar">&times;</button>
+            </div>
+
+            <!-- Abas do Inspetor -->
+            <div class="inspector-tabs">
+                <button class="inspector-tab-btn active" data-tab="tab-arq">🏢 Dados</button>
+                <button class="inspector-tab-btn" data-tab="tab-obra">🏗️ Obra</button>
+                <button class="inspector-tab-btn" data-tab="tab-fvs">📋 FVS</button>
+                <button class="inspector-tab-btn" data-tab="tab-ocorr">⚠️ Ocorrências</button>
+            </div>
+
+            <!-- CONTEÚDO ABA 1: ARQUITETURA -->
+            <div id="tab-arq" class="tab-pane active">
+                <div class="spec-row">
+                    <span class="spec-label">Endereço Real:</span>
+                    <span class="spec-val" id="detail-address" style="font-size: 11px;">Av. João Paulo I, 1973</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Altura / Pavimentos:</span>
+                    <span class="spec-val" id="detail-andares">36 Andares</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Tipologia:</span>
+                    <span class="spec-val" id="detail-tipologia">3 Dormitórios</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Unidades por Andar:</span>
+                    <span class="spec-val" id="detail-aptos-andar">4 por andar</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Total no Edifício:</span>
+                    <span class="spec-val" id="detail-aptos-torre">144 Apartamentos</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Área Privativa:</span>
+                    <span class="spec-val" id="detail-metragens">128,28 m² a 135,29 m²</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Subsolos Garagem:</span>
+                    <span class="spec-val" id="detail-subsolos">3 Pavimentos</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Total Subcondomínio:</span>
+                    <span class="spec-val" id="detail-total-grupo">1.008 Apartamentos</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Área Construída Grupo:</span>
+                    <span class="spec-val" id="detail-construida-grupo">217.568 m²</span>
+                </div>
+                <div class="card-desc" id="detail-grupo-desc">
+                    7 torres imponentes de 36 andares. Apartamentos amplos com suíte máster, closet e varanda gourmet.
+                </div>
+            </div>
+
+            <!-- CONTEÚDO ABA 2: STATUS DA OBRA -->
+            <div id="tab-obra" class="tab-pane">
+                <div style="font-size: 13px; font-weight: 700; margin-bottom: 4px;">Progresso Físico Geral</div>
+                <div class="progress-bar-container">
+                    <div id="detail-obra-bar" class="progress-bar-fill" style="width: 92%;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 12px; margin-bottom: 12px;">
+                    <span id="detail-obra-pct" style="font-weight: 800; color: #10b981;">92% Concluído</span>
+                    <span id="detail-obra-fase" class="chip-status chip-success">Acabamento</span>
+                </div>
+
+                <div class="spec-row">
+                    <span class="spec-label">Fundações & Subsolos:</span>
+                    <span class="spec-val" style="color: #34d399;">100% (Concluído)</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Estrutura de Concreto:</span>
+                    <span class="spec-val" style="color: #34d399;">100% (Concluído)</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Alvenaria & Vedações:</span>
+                    <span class="spec-val" style="color: #34d399;">95%</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Esquadrias & Vidros:</span>
+                    <span class="spec-val" style="color: #fbbf24;">88%</span>
+                </div>
+                <div class="spec-row">
+                    <span class="spec-label">Barramento Bus-Way / Elétrica:</span>
+                    <span class="spec-val" style="color: #34d399;">90%</span>
+                </div>
+            </div>
+
+            <!-- CONTEÚDO ABA 3: FVS (QUALIDADE) -->
+            <div id="tab-fvs" class="tab-pane">
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+                    Fichas de Verificação de Serviço vinculadas a esta torre:
+                </div>
+                <div id="detail-fvs-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Preenchido dinamicamente via JS -->
+                </div>
+            </div>
+
+            <!-- CONTEÚDO ABA 4: OCORRÊNCIAS -->
+            <div id="tab-ocorr" class="tab-pane">
+                <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 8px;">
+                    Não-conformidades apontadas no modelo:
+                </div>
+                <div id="detail-ocorr-list" style="display: flex; flex-direction: column; gap: 8px;">
+                    <!-- Preenchido dinamicamente via JS -->
+                </div>
+            </div>
+
+            <div style="margin-top: 14px; display: flex; gap: 8px;">
+                <button class="btn-primary" style="flex: 1; justify-content: center;" onclick="document.getElementById('btn-open-floorplan').click();">
+                    📐 Ver Planta 3D
+                </button>
+            </div>
+        </aside>
+
+        <!-- Barra Inferior -->
+        <footer class="footer-bar interactive">
+            <div class="action-buttons">
+                <button id="btn-open-floorplan" class="btn-primary" title="Explorar Plantas 3D (125m² e 80m²)">
+                    📐 <span class="btn-label">Plantas 3D</span>
+                </button>
+                <button id="btn-open-specs" class="btn-secondary" title="Ficha Técnica do Condomínio" onclick="document.getElementById('modal-specs').classList.add('active');">
+                    📊 <span class="btn-label">Ficha Técnica</span>
+                </button>
+                <button id="btn-open-gis" class="btn-secondary" title="Dados Geoespaciais (GIS)" onclick="document.getElementById('modal-gis').classList.add('active');">
+                    🛰️ <span class="btn-label">Dados GIS</span>
+                </button>
+            </div>
+
+            <div class="controls-hint">
+                🖱️ <strong>Girar:</strong> esquerdo · 🔍 <strong>Zoom:</strong> scroll · ✋ <strong>Mover:</strong> direito · 🏢 <strong>Clique num prédio</strong>
+            </div>
+        </footer>
+    </div>
+
+    <!-- MODAL 1: Visualizador 3D de Planta Baixa Interativa -->
+    <div id="modal-floorplan" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Planta Baixa 3D Interativa - Residencial Parque Firenze</h2>
+                <button id="btn-close-floorplan" class="close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="floorplan-canvas"></div>
+                <div class="floorplan-sidebar">
+                    <div class="plan-tabs">
+                        <button class="tab-plan-btn active" data-plan="3dorm">3 Dormitórios (125m²)</button>
+                        <button class="tab-plan-btn" data-plan="2dorm">2 Dormitórios (80m²)</button>
+                    </div>
+
+                    <div id="plan-specs-text">
+                        <h4 style="color: #38bdf8; margin-bottom: 6px;">Apartamento Tipo 3 Dormitórios (Padrão 125m² - 135m²)</h4>
+                        <div style="font-size: 13px; line-height: 1.5; color: #cbd5e1;">
+                            <p><strong>Área Privativa:</strong> 128,28 m² - 135,29 m²</p>
+                            <p><strong>Configuração:</strong> 3 Dormitórios (1 suíte com closet privativo)</p>
+                            <p><strong>Vagas de Garagem:</strong> 1 a 2 vagas cobertas</p>
+                            <p><strong>Destaque Arquitetônico:</strong> Varanda Gourmet de grandes dimensões com churrasqueira a carvão e bancada em granito integrada à sala.</p>
+                            <div style="margin-top: 8px;"><strong>Ambientes Principais:</strong></div>
+                            <ul style="padding-left: 18px; margin-top: 4px; font-size: 12px; color: #94a3b8;">
+                                <li>Living amplo para Sala de Estar e Jantar integrados</li>
+                                <li>Varanda Gourmet com churrasqueira a carvão</li>
+                                <li>Suíte Master com espaço para closet planejado</li>
+                                <li>2 Dormitórios de solteiro / home office</li>
+                                <li>Cozinha espaçosa e área de serviço independente</li>
+                                <li>Lavabo social e banheiro completo</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Ficha Técnica Oficial do Parque Firenze -->
+    <div id="modal-specs" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2>Ficha Técnica Oficial - Residencial Parque Firenze</h2>
+                <button class="close-btn" onclick="document.getElementById('modal-specs').classList.remove('active');">&times;</button>
+            </div>
+            <div class="specs-grid">
+                <div class="spec-card">
+                    <h4>🏗️ Dados Gerais do Empreendimento</h4>
+                    <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+                        <strong>Realização:</strong> Cooperativa Habitacional Vida Nova (CHVN)<br>
+                        <strong>Local:</strong> Estrada São Judas, 190 / Av. João Paulo I, 1973 - Embu das Artes/SP<br>
+                        <strong>Total de Torres:</strong> 45 Edifícios Residenciais<br>
+                        <strong>Total de Apartamentos:</strong> 8.400 unidades habitacionais<br>
+                        <strong>Subcondomínios:</strong> 7 Grupos (Grupos 12 ao 18)<br>
+                        <strong>População Estimada:</strong> Mais de 25.000 moradores
+                    </p>
+                </div>
+                <div class="spec-card">
+                    <h4>🏢 Torres de 3 Dormitórios (36 Andares)</h4>
+                    <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+                        <strong>Subcondomínios:</strong> Grupos 13, 15 e 17 (21 torres)<br>
+                        <strong>Torres por Grupo:</strong> 7 torres (Blocos A, B, C, D, E, F, G)<br>
+                        <strong>Pavimentos:</strong> Térreo + 36 pavimentos tipo + Duplex<br>
+                        <strong>Unidades por Andar:</strong> 4 apartamentos de canto amplos<br>
+                        <strong>Metragens:</strong> 128,28 m² a 135,29 m² | Duplex: 290,73 m²
+                    </p>
+                </div>
+                <div class="spec-card">
+                    <h4>🏢 Torres de 2 Dormitórios (28 Andares)</h4>
+                    <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
+                        <strong>Subcondomínios:</strong> Grupos 12, 14, 16 e 18 (24 torres)<br>
+                        <strong>Torres por Grupo:</strong> 6 torres (Blocos A, B, C, D, E, F)<br>
+                        <strong>Pavimentos:</strong> Térreo + 27 pavimentos tipo + Cobertura<br>
+                        <strong>Unidades por Andar:</strong> 8 apartamentos<br>
+                        <strong>Metragens:</strong> 79,84 m² a 82,00 m² | Duplex: 184 m² a 203 m²
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Dados Geoespaciais (GIS & Satélite) -->
+    <div id="modal-gis" class="modal">
+        <div class="modal-content" style="max-width: 800px;">
+            <div class="modal-header">
+                <h2>🛰️ Dados Geoespaciais & Implantação Satélite</h2>
+                <button class="close-btn" onclick="document.getElementById('modal-gis').classList.remove('active');">&times;</button>
+            </div>
+            <div style="padding: 24px; color: #cbd5e1; font-size: 13px; line-height: 1.6;">
+                <p><strong>Ponto Central de Georreferenciamento:</strong> Latitude -23.6350634 | Longitude -46.8178467</p>
+                <p><strong>Sistema de Referência Espacial:</strong> WGS84 / EPSG:4326 | Projeção UTM Zone 23S (EPSG:31983)</p>
+                <p><strong>Altitude Topográfica da Crista:</strong> 805 metros acima do nível do mar</p>
+                <div style="margin-top: 14px; background: rgba(15, 23, 42, 0.6); padding: 14px; border-radius: 8px; border-left: 3px solid #38bdf8;">
+                    <strong>Vias de Contorno Real:</strong>
+                    <ul style="padding-left: 18px; margin-top: 6px;">
+                        <li><strong>Av. João Paulo I, 1973:</strong> Acesso aos Grupos Ímpares (13, 15 e 17) com rotatória em frente ao Grupo 13.</li>
+                        <li><strong>Estrada São Judas, 190:</strong> Acesso aos Grupos Pares (12, 14, 16 e 18) na encosta norte.</li>
+                        <li><strong>Novo Acesso BR-116:</strong> Alça rodoviária direta da Rodovia Régis Bittencourt.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 4: Detalhes de FVS (Ficha de Verificação de Serviço) -->
+    <div id="modal-fvs-detail" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2 id="fvs-modal-title">Ficha de Verificação de Serviço (FVS)</h2>
+                <button class="close-btn" onclick="document.getElementById('modal-fvs-detail').classList.remove('active');">&times;</button>
+            </div>
+            <div id="fvs-modal-body" style="padding: 24px; color: #cbd5e1; font-size: 13px;">
+                <!-- Preenchido dinamicamente via JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts da Aplicação (Three.js local e módulos da maquete) -->
+    <script src="vendor/three.min.js"></script>
+    <script src="vendor/OrbitControls.js"></script>
+    <script src="vendor/GLTFLoader.js"></script>
+    <script src="js/condominiumData.js"></script>
+    <script src="js/glbTowerLoader.js"></script>
+    <script src="js/towerBuilder.js"></script>
+    <script src="js/siteLayout.js"></script>
+    <script src="js/terrainBuilder.js"></script>
+    <script src="js/amenitiesBuilder.js"></script>
+    <script src="js/floorPlanViewer.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>
