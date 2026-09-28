@@ -160,6 +160,7 @@ class TowerBuilder {
         coreMesh.position.y = towerHeight / 2;
         coreMesh.castShadow = true;
         coreMesh.receiveShadow = true;
+        coreMesh.userData.bodyHeight = towerHeight;
         towerGroup.add(coreMesh);
 
         // 2. Quatro asas (Wings) formando a clássica cruz dos prédios Vida Nova
@@ -168,6 +169,7 @@ class TowerBuilder {
         wingMeshX.position.y = towerHeight / 2;
         wingMeshX.castShadow = true;
         wingMeshX.receiveShadow = true;
+        wingMeshX.userData.bodyHeight = towerHeight;
         towerGroup.add(wingMeshX);
 
         const wingGeoZ = new THREE.BoxGeometry(wingWidth, towerHeight, wingLength * 2 + coreSize);
@@ -175,6 +177,7 @@ class TowerBuilder {
         wingMeshZ.position.y = towerHeight / 2;
         wingMeshZ.castShadow = true;
         wingMeshZ.receiveShadow = true;
+        wingMeshZ.userData.bodyHeight = towerHeight;
         towerGroup.add(wingMeshZ);
 
         // 3. Frisos verticais contrastantes e varandas gourmet recuadas
@@ -188,56 +191,36 @@ class TowerBuilder {
         const balconyGeo = new THREE.BoxGeometry(balconyWidth, balconyThickness, balconyDepth);
         const railingGeo = new THREE.BoxGeometry(balconyWidth, railingHeight, 0.08);
 
-        // Criamos instanced meshes ou merged grupos para desempenho fluido 60 FPS
-        const balconiesNorth = new THREE.Group();
-        const balconiesSouth = new THREE.Group();
-        const balconiesEast = new THREE.Group();
-        const balconiesWest = new THREE.Group();
-
+        // Instâncias ordenadas por andar (4 por pavimento): o fatiamento só ajusta `count`.
+        const slabs = new THREE.InstancedMesh(balconyGeo, this.materials.facadeWhite, andares * 4);
+        const rails = new THREE.InstancedMesh(railingGeo, this.materials.glassBalcony, andares * 4);
+        const edge = wingLength + coreSize / 2;
+        const m = new THREE.Matrix4();
+        const q = new THREE.Quaternion();
+        const p = new THREE.Vector3();
+        const one = new THREE.Vector3(1, 1, 1);
+        const up = THREE.Object3D.DefaultUp;
+        const sides = [
+            { dx: 0, dz: 1, rot: 0 },
+            { dx: 0, dz: -1, rot: 0 },
+            { dx: 1, dz: 0, rot: Math.PI / 2 },
+            { dx: -1, dz: 0, rot: Math.PI / 2 }
+        ];
+        let i = 0;
         for (let f = 1; f <= andares; f++) {
             const floorY = f * floorHeight - floorHeight / 2;
-
-            // Norte
-            const bN = new THREE.Mesh(balconyGeo, this.materials.facadeWhite);
-            bN.position.set(0, floorY, wingLength + coreSize / 2 + balconyDepth / 2 - 0.2);
-            balconiesNorth.add(bN);
-            const rN = new THREE.Mesh(railingGeo, this.materials.glassBalcony);
-            rN.position.set(0, floorY + railingHeight / 2, wingLength + coreSize / 2 + balconyDepth - 0.2);
-            balconiesNorth.add(rN);
-
-            // Sul
-            const bS = new THREE.Mesh(balconyGeo, this.materials.facadeWhite);
-            bS.position.set(0, floorY, -(wingLength + coreSize / 2 + balconyDepth / 2 - 0.2));
-            balconiesSouth.add(bS);
-            const rS = new THREE.Mesh(railingGeo, this.materials.glassBalcony);
-            rS.position.set(0, floorY + railingHeight / 2, -(wingLength + coreSize / 2 + balconyDepth - 0.2));
-            balconiesSouth.add(rS);
-
-            // Leste
-            const bE = new THREE.Mesh(balconyGeo, this.materials.facadeWhite);
-            bE.rotation.y = Math.PI / 2;
-            bE.position.set(wingLength + coreSize / 2 + balconyDepth / 2 - 0.2, floorY, 0);
-            balconiesEast.add(bE);
-            const rE = new THREE.Mesh(railingGeo, this.materials.glassBalcony);
-            rE.rotation.y = Math.PI / 2;
-            rE.position.set(wingLength + coreSize / 2 + balconyDepth - 0.2, floorY + railingHeight / 2, 0);
-            balconiesEast.add(rE);
-
-            // Oeste
-            const bW = new THREE.Mesh(balconyGeo, this.materials.facadeWhite);
-            bW.rotation.y = Math.PI / 2;
-            bW.position.set(-(wingLength + coreSize / 2 + balconyDepth / 2 - 0.2), floorY, 0);
-            balconiesWest.add(bW);
-            const rW = new THREE.Mesh(railingGeo, this.materials.glassBalcony);
-            rW.rotation.y = Math.PI / 2;
-            rW.position.set(-(wingLength + coreSize / 2 + balconyDepth - 0.2), floorY + railingHeight / 2, 0);
-            balconiesWest.add(rW);
+            sides.forEach((s) => {
+                q.setFromAxisAngle(up, s.rot);
+                const slabOff = edge + balconyDepth / 2 - 0.2;
+                const railOff = edge + balconyDepth - 0.2;
+                slabs.setMatrixAt(i, m.compose(p.set(s.dx * slabOff, floorY, s.dz * slabOff), q, one));
+                rails.setMatrixAt(i, m.compose(p.set(s.dx * railOff, floorY + railingHeight / 2, s.dz * railOff), q, one));
+                i++;
+            });
         }
-
-        towerGroup.add(balconiesNorth);
-        towerGroup.add(balconiesSouth);
-        towerGroup.add(balconiesEast);
-        towerGroup.add(balconiesWest);
+        slabs.userData.perFloor = 4;
+        rails.userData.perFloor = 4;
+        towerGroup.add(slabs, rails);
 
         // 4. Frisos de canto em cinza chumbo (destaque vertical das torres Vida Nova)
         const cornerPillarGeo = new THREE.BoxGeometry(0.8, towerHeight, 0.8);
@@ -250,6 +233,7 @@ class TowerBuilder {
         offsets.forEach(off => {
             const pillar = new THREE.Mesh(cornerPillarGeo, this.materials.facadeAccent);
             pillar.position.set(off.x, towerHeight / 2, off.z);
+            pillar.userData.bodyHeight = towerHeight;
             towerGroup.add(pillar);
         });
 
@@ -258,6 +242,7 @@ class TowerBuilder {
         const roofBase = new THREE.Mesh(roofBaseGeo, this.materials.facadeAccent);
         roofBase.position.y = towerHeight + 0.6;
         roofBase.castShadow = true;
+        roofBase.userData.roof = true;
         towerGroup.add(roofBase);
 
         // Barrilete e Casa de Máquinas dos Elevadores
@@ -265,18 +250,21 @@ class TowerBuilder {
         const machineRoom = new THREE.Mesh(machineRoomGeo, this.materials.roofTech);
         machineRoom.position.y = towerHeight + 1.2 + 1.6;
         machineRoom.castShadow = true;
+        machineRoom.userData.roof = true;
         towerGroup.add(machineRoom);
 
         // Caixa d'água superior com reservatório duplo
         const waterTankGeo = new THREE.BoxGeometry(coreSize * 0.5, 2.0, coreSize * 0.5);
         const waterTank = new THREE.Mesh(waterTankGeo, this.materials.facadeWhite);
         waterTank.position.y = towerHeight + 4.4 + 1.0;
+        waterTank.userData.roof = true;
         towerGroup.add(waterTank);
 
         // Luz de sinalização aérea no topo (Sinalizador noturno vermelho de segurança da ANAC)
         const beaconGeo = new THREE.SphereGeometry(0.35, 12, 12);
         const beacon = new THREE.Mesh(beaconGeo, this.materials.beaconRed);
         beacon.position.y = towerHeight + 6.6;
+        beacon.userData.roof = true;
         towerGroup.add(beacon);
 
         // 6. Base da Torre / Embasamento (Térreo com Hall Social + Entrada Garagem)

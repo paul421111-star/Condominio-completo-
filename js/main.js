@@ -438,20 +438,24 @@ class ParqueFirenzeApp {
         const floorHeight = 0.85;
         const maxH = targetFloor * floorHeight;
 
-        towerData.towerGroup.traverse((child) => {
-            if (child.isMesh && child.position.y > maxH + 1.5) {
-                child.visible = false;
-            } else {
-                child.visible = true;
+        towerData.towerGroup.children.forEach((child) => {
+            if (!child.isMesh) return;
+            const d = child.userData;
+            if (d.perFloor) {
+                child.count = targetFloor * d.perFloor;
+            } else if (d.bodyHeight) {
+                const h = Math.min(maxH, d.bodyHeight);
+                child.scale.y = h / d.bodyHeight;
+                child.position.y = h / 2;
+            } else if (d.roof) {
+                child.visible = targetFloor >= towerData.andares;
             }
         });
     }
 
     resetProceduralTower(towerData) {
         if (!towerData.towerGroup) return;
-        towerData.towerGroup.traverse((child) => {
-            child.visible = true;
-        });
+        this.sliceProceduralTower(towerData, towerData.andares);
     }
 
     setMode(mode) {
