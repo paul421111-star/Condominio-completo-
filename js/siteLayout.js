@@ -1,6 +1,6 @@
 /**
  * Implantação do Parque Firenze decalcada da "Planta de Implantação" oficial
- * (7 grupos, 45 torres, 8.400 apartamentos) exibida na maquete do estande.
+ * (7 grupos, 49 torres) exibida na maquete do estande.
  *
  * As coordenadas estão em pixels da foto da planta (1024 x 518, norte para
  * cima) e são convertidas para a cena por px(). A Rodovia Régis Bittencourt
@@ -94,23 +94,23 @@ const SITE_LAYOUT = {
     groups: {
         12: {
             plateau: [120, 336, 305, 405],
-            leisure: [291, 370],
-            towers: [[160, 352], [210, 352], [262, 352], [150, 388], [200, 388], [250, 388]]
+            leisure: [285, 358],
+            towers: [[145, 352], [190, 352], [235, 352], [140, 388], [185, 388], [230, 388], [275, 388]]
         },
         14: {
             plateau: [115, 258, 290, 318],
             leisure: [140, 280],
-            towers: [[200, 280], [235, 280], [268, 280], [140, 305], [175, 305], [212, 305]]
+            towers: [[200, 280], [235, 280], [268, 280], [140, 305], [175, 305], [212, 305], [248, 305]]
         },
         16: {
             plateau: [306, 198, 376, 312],
-            leisure: [347, 300],
-            towers: [[330, 212], [364, 212], [330, 244], [364, 244], [330, 276], [364, 276]]
+            leisure: [361, 302],
+            towers: [[327, 210], [361, 210], [327, 238], [361, 238], [327, 266], [361, 266], [327, 294]]
         },
         18: {
             plateau: [400, 188, 466, 308],
-            leisure: [434, 296],
-            towers: [[418, 202], [450, 202], [418, 234], [450, 234], [418, 266], [450, 266]]
+            leisure: [449, 294],
+            towers: [[417, 202], [449, 202], [417, 230], [449, 230], [417, 258], [449, 258], [417, 286]]
         },
         13: {
             plateau: [546, 142, 604, 300],

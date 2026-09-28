@@ -451,6 +451,46 @@ body, html {
     white-space: nowrap;
 }
 
+.qualiobra-badge {
+    background: var(--bg-glass);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(16, 185, 129, 0.45);
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 700;
+    color: #34d399;
+    white-space: nowrap;
+}
+
+.qualiobra-badge.is-error {
+    border-color: rgba(239, 68, 68, 0.5);
+    color: #f87171;
+}
+
+.qualiobra-badge.hidden,
+.qualiobra-open-btn.hidden {
+    display: none;
+}
+
+.qualiobra-open-btn {
+    width: 100%;
+    margin-top: 12px;
+    padding: 9px 12px;
+    border: 1px solid rgba(56, 189, 248, 0.5);
+    border-radius: 8px;
+    background: rgba(14, 165, 233, 0.18);
+    color: #7dd3fc;
+    font-weight: 700;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.qualiobra-open-btn:hover {
+    background: rgba(14, 165, 233, 0.3);
+}
+
 /* ================= TOOLTIP FLUTUANTE ================= */
 #hover-tooltip {
     position: absolute;

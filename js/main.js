@@ -62,6 +62,7 @@ class ParqueFirenzeApp {
 
         // Monta cena e camadas
         this.buildDigitalTwin();
+        this.qualiObra = new QualiObraBridge(this);
 
         // Inicializa visualizador de planta baixa 3D
         this.floorPlanViewer = new FloorPlanViewer('floorplan-canvas');
@@ -160,11 +161,11 @@ class ParqueFirenzeApp {
         // Terreno e Implantação
         this.terrainBuilder.buildAll();
 
-        // Implantação oficial: 45 torres nas posições da planta (js/siteLayout.js)
+        // Implantação oficial: 49 torres nas posições da planta (js/siteLayout.js)
         this.towerPlacements = SITE_LAYOUT.towerPlacements();
         this.syncLayoutData();
 
-        // Constrói as 45 torres procedurais iniciais
+        // Constrói as 49 torres procedurais iniciais
         this.proceduralTowerObjects = [];
         this.towerPlacements.forEach(t => {
             const mesh = this.towerBuilder.createTower(t.grupo, t.bloco, t.x, t.y, t.z, t.rot);
@@ -445,7 +446,8 @@ class ParqueFirenzeApp {
                 child.count = targetFloor * d.perFloor;
             } else if (d.bodyHeight) {
                 const h = Math.min(maxH, d.bodyHeight);
-                child.scale.y = h / d.bodyHeight;
+                child.visible = h > 0;
+                child.scale.y = Math.max(h, 0.001) / d.bodyHeight;
                 child.position.y = h / 2;
             } else if (d.roof) {
                 child.visible = targetFloor >= towerData.andares;
@@ -455,7 +457,11 @@ class ParqueFirenzeApp {
 
     resetProceduralTower(towerData) {
         if (!towerData.towerGroup) return;
-        this.sliceProceduralTower(towerData, towerData.andares);
+        if (towerData.fvs && this.qualiObra) {
+            this.qualiObra.renderStage(towerData, towerData.fvs);
+        } else {
+            this.sliceProceduralTower(towerData, towerData.andares);
+        }
     }
 
     setMode(mode) {
@@ -580,7 +586,7 @@ class ParqueFirenzeApp {
             this.towerBuilder.towers.forEach(col => {
                 const grp = PARQUE_FIRENZE_DATA.grupos[col.userData.grupoId];
                 if (grp && col.userData.towerGroup) {
-                    const pct = grp.statusObra.progressoGeral;
+                    const pct = col.userData.fvs ? col.userData.fvs.progress : grp.statusObra.progressoGeral;
                     let color = 0x10b981;
                     if (pct < 60) color = 0xef4444;
                     else if (pct < 85) color = 0xf59e0b;
@@ -810,6 +816,7 @@ class ParqueFirenzeApp {
             setVal('detail-obra-pct', `${obraPct}% Concluído`);
             setVal('detail-obra-fase', grupoObj.statusObra.fase);
         }
+        this.qualiObra?.renderTowerCard(data);
 
         // Popula Lista de FVS na aba 3
         const fvsContainer = document.getElementById('detail-fvs-list');

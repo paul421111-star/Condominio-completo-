@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Parque Firenze Digital Twin — 3D BIM-Lite & GIS | Cooperativa Vida Nova</title>
-    <link rel="stylesheet" href="css/styles.css?v=30">
+    <link rel="stylesheet" href="css/styles.css?v=36">
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏢</text></svg>">
 </head>
 <body>
@@ -36,7 +36,7 @@
                         <div class="metric-lbl">Torres</div>
                     </div>
                     <div class="metric-item">
-                        <div class="metric-num">8.400</div>
+                        <div class="metric-num">9.296</div>
                         <div class="metric-lbl">Apartamentos</div>
                     </div>
                     <div class="metric-item">
@@ -258,6 +258,7 @@
                     <span id="detail-obra-fase" class="chip-status chip-success">Acabamento</span>
                 </div>
 
+                <div id="detail-obra-etapas">
                 <div class="spec-row">
                     <span class="spec-label">Fundações & Subsolos:</span>
                     <span class="spec-val" style="color: #34d399;">100% (Concluído)</span>
@@ -278,6 +279,8 @@
                     <span class="spec-label">Barramento Bus-Way / Elétrica:</span>
                     <span class="spec-val" style="color: #34d399;">90%</span>
                 </div>
+                </div>
+                <button id="btn-open-qualiobra" class="qualiobra-open-btn hidden" type="button">Abrir bloco no QualiObra</button>
             </div>
 
             <!-- CONTEÚDO ABA 3: FVS (QUALIDADE) -->
@@ -320,6 +323,8 @@
                     🛰️ <span class="btn-label">Dados GIS</span>
                 </button>
             </div>
+
+            <div id="qualiobra-badge" class="qualiobra-badge hidden"></div>
 
             <div class="controls-hint">
                 🖱️ <strong>Girar:</strong> esquerdo · 🔍 <strong>Zoom:</strong> scroll · ✋ <strong>Mover:</strong> direito · 🏢 <strong>Clique num prédio</strong>
@@ -378,8 +383,8 @@
                     <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
                         <strong>Realização:</strong> Cooperativa Habitacional Vida Nova (CHVN)<br>
                         <strong>Local:</strong> Estrada São Judas, 190 / Av. João Paulo I, 1973 - Embu das Artes/SP<br>
-                        <strong>Total de Torres:</strong> 45 Edifícios Residenciais<br>
-                        <strong>Total de Apartamentos:</strong> 8.400 unidades habitacionais<br>
+                        <strong>Total de Torres:</strong> 49 Edifícios Residenciais<br>
+                        <strong>Total de Apartamentos:</strong> 9.296 unidades habitacionais<br>
                         <strong>Subcondomínios:</strong> 7 Grupos (Grupos 12 ao 18)<br>
                         <strong>População Estimada:</strong> Mais de 25.000 moradores
                     </p>
@@ -397,8 +402,8 @@
                 <div class="spec-card">
                     <h4>🏢 Torres de 2 Dormitórios (28 Andares)</h4>
                     <p style="font-size: 13px; color: #cbd5e1; line-height: 1.6;">
-                        <strong>Subcondomínios:</strong> Grupos 12, 14, 16 e 18 (24 torres)<br>
-                        <strong>Torres por Grupo:</strong> 6 torres (Blocos A, B, C, D, E, F)<br>
+                        <strong>Subcondomínios:</strong> Grupos 12, 14, 16 e 18 (28 torres)<br>
+                        <strong>Torres por Grupo:</strong> 7 torres (Blocos A, B, C, D, E, F, G)<br>
                         <strong>Pavimentos:</strong> Térreo + 27 pavimentos tipo + Cobertura<br>
                         <strong>Unidades por Andar:</strong> 8 apartamentos<br>
                         <strong>Metragens:</strong> 79,84 m² a 82,00 m² | Duplex: 184 m² a 203 m²
@@ -448,13 +453,14 @@
     <script src="vendor/three.min.js"></script>
     <script src="vendor/OrbitControls.js"></script>
     <script src="vendor/GLTFLoader.js"></script>
-    <script src="js/condominiumData.js?v=29"></script>
+    <script src="js/condominiumData.js?v=36"></script>
     <script src="js/glbTowerLoader.js"></script>
-    <script src="js/towerBuilder.js?v=35"></script>
-    <script src="js/siteLayout.js"></script>
+    <script src="js/towerBuilder.js?v=36"></script>
+    <script src="js/siteLayout.js?v=36"></script>
     <script src="js/terrainBuilder.js"></script>
     <script src="js/amenitiesBuilder.js?v=34"></script>
     <script src="js/floorPlanViewer.js?v=31"></script>
-    <script src="js/main.js?v=35"></script>
+    <script src="js/qualiObraBridge.js?v=37"></script>
+    <script src="js/main.js?v=36"></script>
 </body>
 </html>
