@@ -9,6 +9,8 @@ import { isRaining } from '../lib/weather';
 import { Terrain } from './Terrain';
 import { Towers, type PlacedTower } from './Towers';
 import { Trees, Water } from './Nature';
+import { SitePlan } from './SitePlan';
+import { Neighborhood } from './Neighborhood';
 import { SunPath, SunSystem } from './Sun';
 import { Labels } from './Labels';
 import { GoogleTiles, getGoogleKey } from './GoogleTiles';
@@ -138,6 +140,8 @@ function World({ geo }: { geo: Geo }) {
       ) : (
         <Terrain geo={geo} />
       )}
+      {!city3d && <SitePlan geo={geo} />}
+      {!city3d && <Neighborhood geo={geo} />}
       {!city3d && <Water geo={geo} />}
       {!city3d && layers.trees && <Trees geo={geo} />}
       <Towers geo={geo} onPlaced={onPlaced} />

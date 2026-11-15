@@ -4,8 +4,8 @@
    "id": 12,
    "even": true,
    "center": [
-    169.3,
-    -556.2
+    115.0,
+    -521.7
    ],
    "pin": [
     157.4,
@@ -16,8 +16,8 @@
    "id": 13,
    "even": false,
    "center": [
-    53.5,
-    160
+    4.9,
+    150.0
    ],
    "pin": [
     91.6,
@@ -28,8 +28,8 @@
    "id": 14,
    "even": true,
    "center": [
-    234,
-    -479.4
+    241.7,
+    -457.5
    ],
    "pin": [
     220.9,
@@ -40,8 +40,8 @@
    "id": 15,
    "even": false,
    "center": [
-    -71.5,
-    213.1
+    -91.4,
+    208.5
    ],
    "pin": [
     -11.4,
@@ -52,8 +52,8 @@
    "id": 16,
    "even": true,
    "center": [
-    174.2,
-    -243.4
+    177.2,
+    -226.2
    ],
    "pin": [
     102.6,
@@ -64,8 +64,8 @@
    "id": 17,
    "even": false,
    "center": [
-    -252.3,
-    499.5
+    -247.0,
+    475.8
    ],
    "pin": [
     -224.5,
@@ -76,8 +76,8 @@
    "id": 18,
    "even": true,
    "center": [
-    119.7,
-    -124.5
+    96.9,
+    -108.9
    ],
    "pin": [
     174.1,
@@ -90,10 +90,11 @@
    "id": "G12-A",
    "group": 12,
    "block": "A",
-   "x": 55.7,
-   "z": -443.5,
+   "x": 40.0,
+   "z": -469.5,
    "rot": 0.7404230241639662,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G12-B",
@@ -102,7 +103,8 @@
    "x": 96.2,
    "z": -494.6,
    "rot": 0.7404230241639662,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G12-C",
@@ -111,7 +113,8 @@
    "x": 136.6,
    "z": -545.7,
    "rot": 0.7404230241639662,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G12-D",
@@ -120,34 +123,38 @@
    "x": 191.4,
    "z": -581.6,
    "rot": 0.7404230241639662,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G12-E",
    "group": 12,
    "block": "E",
-   "x": 246.1,
-   "z": -617.4,
+   "x": 79.7,
+   "z": -432.3,
    "rot": 0.7404230241639662,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G12-F",
    "group": 12,
    "block": "F",
-   "x": 289.8,
-   "z": -654.4,
+   "x": 146.3,
+   "z": -606.6,
    "rot": 0.7404230241639662,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G13-A",
    "group": 13,
    "block": "A",
-   "x": -2.3,
-   "z": 84.7,
+   "x": -72.4,
+   "z": 67.1,
    "rot": -0.8823410367044162,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G13-B",
@@ -156,16 +163,18 @@
    "x": 19.6,
    "z": 182.5,
    "rot": -0.8823410367044162,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G13-C",
    "group": 13,
    "block": "C",
-   "x": 41.4,
-   "z": 106.4,
+   "x": -34.1,
+   "z": 84.9,
    "rot": -0.8823410367044162,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G13-D",
@@ -174,7 +183,8 @@
    "x": 60.1,
    "z": 204.2,
    "rot": -0.8823410367044162,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G13-E",
@@ -183,43 +193,48 @@
    "x": 68.8,
    "z": 242.3,
    "rot": -0.8823410367044162,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G13-F",
    "group": 13,
    "block": "F",
-   "x": 85.2,
-   "z": 128.1,
+   "x": -22.7,
+   "z": 125.7,
    "rot": -0.8823410367044162,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G13-G",
    "group": 13,
    "block": "G",
-   "x": 101.6,
-   "z": 171.6,
+   "x": 15.0,
+   "z": 143.1,
    "rot": -0.8823410367044162,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G14-A",
    "group": 14,
    "block": "A",
-   "x": 144.3,
-   "z": -360.9,
+   "x": 196.0,
+   "z": -364.1,
    "rot": 0.9032622219954064,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G14-B",
    "group": 14,
    "block": "B",
-   "x": 180.4,
+   "x": 231.5,
    "z": -409.8,
    "rot": 0.9032622219954064,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G14-C",
@@ -228,7 +243,8 @@
    "x": 216.5,
    "z": -458.8,
    "rot": 0.9032622219954064,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G14-D",
@@ -237,7 +253,8 @@
    "x": 251.5,
    "z": -507.7,
    "rot": 0.9032622219954064,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G14-E",
@@ -246,34 +263,38 @@
    "x": 287.6,
    "z": -549,
    "rot": 0.9032622219954064,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G14-F",
    "group": 14,
    "block": "F",
-   "x": 323.7,
-   "z": -590.3,
+   "x": 266.9,
+   "z": -455.5,
    "rot": 0.9032622219954064,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G15-A",
    "group": 15,
    "block": "A",
-   "x": -117.2,
-   "z": 149.9,
+   "x": -131.4,
+   "z": 142.1,
    "rot": -0.802250500438791,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G15-B",
    "group": 15,
    "block": "B",
-   "x": -111.7,
-   "z": 198.8,
+   "x": -120.1,
+   "z": 182.9,
    "rot": -0.802250500438791,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G15-C",
@@ -282,25 +303,28 @@
    "x": -76.7,
    "z": 247.7,
    "rot": -0.802250500438791,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G15-D",
    "group": 15,
    "block": "D",
-   "x": -73.4,
-   "z": 139,
+   "x": -170.3,
+   "z": 123.8,
    "rot": -0.802250500438791,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G15-E",
    "group": 15,
    "block": "E",
-   "x": -62.5,
-   "z": 193.4,
+   "x": -82.3,
+   "z": 200.2,
    "rot": -0.802250500438791,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G15-F",
@@ -309,7 +333,8 @@
    "x": -35.1,
    "z": 260.7,
    "rot": -0.802250500438791,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G15-G",
@@ -318,16 +343,18 @@
    "x": -24.2,
    "z": 302,
    "rot": -0.802250500438791,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G16-A",
    "group": 16,
    "block": "A",
-   "x": 36,
-   "z": -281.6,
+   "x": 157.7,
+   "z": -202.6,
    "rot": -0.2667827139483568,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G16-B",
@@ -336,7 +363,8 @@
    "x": 90.7,
    "z": -266.4,
    "rot": -0.2667827139483568,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G16-C",
@@ -345,7 +373,8 @@
    "x": 147.6,
    "z": -252.2,
    "rot": -0.2667827139483568,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G16-D",
@@ -354,43 +383,48 @@
    "x": 202.3,
    "z": -235.9,
    "rot": -0.2667827139483568,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G16-E",
    "group": 16,
    "block": "E",
-   "x": 257,
-   "z": -219.6,
+   "x": 252.9,
+   "z": -215.7,
    "rot": -0.2667827139483568,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G16-F",
    "group": 16,
    "block": "F",
-   "x": 311.7,
-   "z": -204.4,
+   "x": 212.1,
+   "z": -184.3,
    "rot": -0.2667827139483568,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G17-A",
    "group": 17,
    "block": "A",
-   "x": -318.5,
-   "z": 439,
+   "x": -277.2,
+   "z": 386.7,
    "rot": -0.9640165876548964,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G17-B",
    "group": 17,
    "block": "B",
-   "x": -294.5,
-   "z": 469.4,
+   "x": -256.6,
+   "z": 419.1,
    "rot": -0.9640165876548964,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G17-C",
@@ -399,7 +433,8 @@
    "x": -270.4,
    "z": 499.8,
    "rot": -0.9640165876548964,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G17-D",
@@ -408,7 +443,8 @@
    "x": -246.3,
    "z": 527,
    "rot": -0.9640165876548964,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G17-E",
@@ -417,34 +453,38 @@
    "x": -226.6,
    "z": 562.9,
    "rot": -0.9640165876548964,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G17-F",
    "group": 17,
    "block": "F",
-   "x": -215.7,
-   "z": 481.4,
+   "x": -236.6,
+   "z": 451.1,
    "rot": -0.9640165876548964,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G17-G",
    "group": 17,
    "block": "G",
-   "x": -193.8,
-   "z": 517.2,
+   "x": -215.4,
+   "z": 483.9,
    "rot": -0.9640165876548964,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G18-A",
    "group": 18,
    "block": "A",
-   "x": -10,
-   "z": -162,
+   "x": 48.5,
+   "z": -108.9,
    "rot": -0.303760620750978,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G18-B",
@@ -453,7 +493,8 @@
    "x": 41.4,
    "z": -149,
    "rot": -0.303760620750978,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G18-C",
@@ -462,7 +503,8 @@
    "x": 92.9,
    "z": -136,
    "rot": -0.303760620750978,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G18-D",
@@ -471,25 +513,28 @@
    "x": 145.4,
    "z": -116.4,
    "rot": -0.303760620750978,
-   "built": true
+   "built": true,
+   "source": "satelite"
   },
   {
    "id": "G18-E",
    "group": 18,
    "block": "E",
-   "x": 197.9,
-   "z": -100.1,
+   "x": 100.6,
+   "z": -84.1,
    "rot": -0.303760620750978,
-   "built": false
+   "built": false,
+   "source": "projeto"
   },
   {
    "id": "G18-F",
    "group": 18,
    "block": "F",
-   "x": 250.4,
-   "z": -83.8,
+   "x": 152.7,
+   "z": -59.3,
    "rot": -0.303760620750978,
-   "built": false
+   "built": false,
+   "source": "projeto"
   }
  ]
 }

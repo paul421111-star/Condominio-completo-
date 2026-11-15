@@ -1,3 +1,5 @@
+import siteplan from '../data/siteplan.json';
+
 export type XZ = [number, number];
 
 export interface Road {
@@ -18,11 +20,23 @@ export interface GeoData {
   wood: XZ[][];
 }
 
+export interface Deck {
+  groups: number[];
+  poly: XZ[];
+  /** Cota (y da cena) da laje de cobertura dos subsolos. */
+  level: number;
+  bbox: [number, number, number, number];
+}
+
 export interface Geo extends GeoData {
   heights: Float32Array;
   /** Altitude (m acima do mar) do ponto de origem; y = 0 na cena. */
   base: number;
-  /** Altura na cena (y) do terreno real em (x, z). */
+  decks: Deck[];
+  /** Altura do terreno natural, sem os platôs dos pódios. */
+  naturalAt: (x: number, z: number) => number;
+  deckAt: (x: number, z: number) => Deck | null;
+  /** Altura na cena (y): laje do pódio onde houver, senão o terreno natural. */
   heightAt: (x: number, z: number) => number;
 }
 
@@ -50,7 +64,33 @@ export async function loadGeo(): Promise<Geo> {
     );
   };
   const base = raw(0, 0);
-  return { ...data, heights, base, heightAt: (x, z) => raw(x, z) - base };
+  const naturalAt = (x: number, z: number) => raw(x, z) - base;
+
+  const decks: Deck[] = (siteplan.decks as { groups: number[]; poly: XZ[] }[]).map((d) => {
+    const xs = d.poly.map((p) => p[0]);
+    const zs = d.poly.map((p) => p[1]);
+    const bbox: Deck['bbox'] = [Math.min(...xs), Math.max(...xs), Math.min(...zs), Math.max(...zs)];
+    const samples: number[] = [];
+    for (let x = bbox[0]; x <= bbox[1]; x += 6) {
+      for (let z = bbox[2]; z <= bbox[3]; z += 6) {
+        if (pointInPolygon(x, z, d.poly)) samples.push(naturalAt(x, z));
+      }
+    }
+    samples.sort((a, b) => a - b);
+    return { ...d, bbox, level: samples[Math.floor(samples.length / 2)] ?? naturalAt(xs[0], zs[0]) };
+  });
+  const deckAt = (x: number, z: number) =>
+    decks.find((d) => x >= d.bbox[0] && x <= d.bbox[1] && z >= d.bbox[2] && z <= d.bbox[3] && pointInPolygon(x, z, d.poly)) ?? null;
+
+  return {
+    ...data,
+    heights,
+    base,
+    decks,
+    naturalAt,
+    deckAt,
+    heightAt: (x, z) => deckAt(x, z)?.level ?? naturalAt(x, z),
+  };
 }
 
 export const assetUrl = asset;

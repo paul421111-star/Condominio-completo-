@@ -9,8 +9,10 @@ export interface TowerDef {
   x: number;
   z: number;
   rot: number;
-  /** Já erguida na imagem de satélite (as demais são posições estimadas). */
+  /** Já erguida na imagem de satélite. */
   built: boolean;
+  /** Origem da posição: medida no satélite ou tirada do mapa de implantação do projeto. */
+  source: 'satelite' | 'projeto';
 }
 
 export interface GroupDef {
@@ -50,8 +52,43 @@ const ADDRESS: Record<GroupId, string> = {
   18: 'Estrada São Judas · junto à BR-116',
 };
 
+/** Portaria principal mais próxima de cada grupo, segundo os totens de direção (PE05). */
+export const MAIN_GATE: Record<GroupId, string> = {
+  12: 'Portaria 01 · São Judas',
+  14: 'Portaria 01 · São Judas',
+  16: 'Portaria 02 · BR-116',
+  18: 'Portaria 02 · BR-116',
+  13: 'Portaria 03 · João Paulo I',
+  15: 'Portaria 03 · João Paulo I',
+  17: 'Portaria 03 · João Paulo I',
+};
+
+/** Cores de identificação dos subcondomínios (manual de Comunicação Visual R01). */
 const COLORS: Record<GroupId, string> = {
-  12: '#22c55e', 13: '#0ea5e9', 14: '#eab308', 15: '#6366f1', 16: '#f97316', 17: '#14b8a6', 18: '#ec4899',
+  12: '#00435C', 13: '#3E3A5A', 14: '#3CA958', 15: '#52514C', 16: '#814139', 17: '#9E825B', 18: '#C09100',
+};
+
+/** Ambientes do térreo, conforme as plantas de comunicação visual. */
+const GROUND_EVEN = ['Acesso principal e secundário', 'Recreação coberta', 'Play kids', 'Salão de festas e copa', 'Administração e sala de reunião'];
+const GROUND_ODD: Record<string, [string, string]> = {
+  A: ['Administração', 'Salão de festas'],
+  B: ['Múltiplo uso', 'Academia'],
+  C: ['Múltiplo uso', 'Brinquedoteca'],
+  D: ['Múltiplo uso', 'Salão de festas'],
+  E: ['Múltiplo uso', 'Múltiplo uso'],
+  F: ['Múltiplo uso', 'Academia'],
+  G: ['Múltiplo uso', 'Salão de festas'],
+};
+
+export function groundFloorOf(group: GroupId, block: string): string[] {
+  if (group % 2 === 0) return GROUND_EVEN;
+  return GROUND_ODD[block] ?? [];
+}
+
+/** Circulação vertical por tipologia, conforme as plantas do tipo. */
+export const CORE: Record<'even' | 'odd', string> = {
+  even: '2 halls · 2 elevadores sociais e 2 de serviço · escada pressurizada',
+  odd: '2 elevadores sociais (um por ala) e 1 de serviço/emergência · antecâmara',
 };
 
 export const GROUPS: GroupDef[] = (raw.groups as { id: GroupId; even: boolean; center: [number, number]; pin: [number, number] }[])
@@ -80,6 +117,9 @@ export const SITE = {
   name: 'Residencial Parque Firenze',
   coop: 'Cooperativa Habitacional Vida Nova',
   city: 'Embu das Artes · SP',
+  /** Cor de destaque do condomínio geral. */
+  color: '#5B90A9',
+  textColor: '#3A3838',
   lat: -23.6322,
   lon: -46.818,
   areas: [

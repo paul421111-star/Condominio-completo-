@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useStore, type ViewMode } from '../store';
-import { GROUPS, GROUP_BY_ID, SITE, TOTALS, TOWERS, TOWER_BY_ID, aptLabel } from '../data/condo';
+import { CORE, GROUPS, GROUP_BY_ID, MAIN_GATE, SITE, TOTALS, TOWERS, TOWER_BY_ID, aptLabel, groundFloorOf } from '../data/condo';
 import { describeWeather, fetchWeather } from '../lib/weather';
 import { fmtDate, fmtTime, localMidnight, minutesOfDay, presetDate, sunAltitude, sunTimes } from '../lib/sun';
 import { OBRA_STAGES, embedded, openInQualiObra } from '../lib/qualiobra';
@@ -290,9 +290,14 @@ export function TowerPanel() {
       <div className="progress">
         <div className="progress-head"><span>{statusTxt}</span><b>{progress}% concluído</b></div>
         <div className="bar"><span style={{ width: `${progress}%` }} /></div>
-        {!o && <small className="muted">{t.built ? 'Torre visível na imagem de satélite.' : 'Torre ainda não erguida; posição estimada.'}</small>}
+        {!o && <small className="muted">{t.built ? 'Torre visível na imagem de satélite.' : 'Torre ainda não erguida; posição conforme a implantação do projeto.'}</small>}
         {o?.updatedAt && <small className="muted">QualiObra · {new Date(o.updatedAt).toLocaleDateString('pt-BR')}</small>}
       </div>
+
+      <ul className="facts">
+        <li><span>Térreo</span><b>{groundFloorOf(t.group, t.block).join(' · ')}</b></li>
+        <li><span>Circulação</span><b>{CORE[g.even ? 'even' : 'odd']}</b></li>
+      </ul>
 
       {floor != null && unit != null && (
         <div className="unit-card">
@@ -376,6 +381,8 @@ function GroupCard() {
         <li><span>Tipologia</span><b>{g.typology}</b></li>
         <li><span>Área privativa</span><b>{g.area}</b></li>
         <li><span>Garagem</span><b>{g.subsolos}</b></li>
+        <li><span>Núcleo</span><b>{CORE[g.even ? 'even' : 'odd']}</b></li>
+        <li><span>Acesso</span><b>{MAIN_GATE[g.id]} · portaria social {g.name.replace('Grupo ', 'G')}</b></li>
         <li><span>Portarias</span><b>Social (186 m²) + serviços (158 m²)</b></li>
         <li><span>Lazer</span><b>Piscinas, academia, quadras, salões, playground</b></li>
       </ul>

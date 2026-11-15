@@ -1,8 +1,9 @@
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
-import { pointInPolygon, type Geo, type XZ } from '../lib/geo';
+import { assetUrl, pointInPolygon, type Geo, type XZ } from '../lib/geo';
 import { TOWERS } from '../data/condo';
+import siteplan from '../data/siteplan.json';
 import { DISC_R } from './Terrain';
 
 function rng(seed: number) {
@@ -36,13 +37,48 @@ function treeGeometry() {
   ])!;
 }
 
+type PlanMask = { data: Uint8ClampedArray; w: number; h: number };
+
+export function usePlanMask() {
+  const [mask, setMask] = useState<PlanMask | null>(null);
+  useEffect(() => {
+    const img = new Image();
+    img.onload = () => {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      const cv = document.createElement('canvas');
+      cv.width = w;
+      cv.height = h;
+      const ctx = cv.getContext('2d', { willReadFrequently: true })!;
+      ctx.drawImage(img, 0, 0);
+      setMask({ data: ctx.getImageData(0, 0, w, h).data, w, h });
+    };
+    img.src = assetUrl(siteplan.plan.url);
+  }, []);
+  return mask;
+}
+
+const [PU, PV] = siteplan.plan.uv;
+const sitePolys = [...siteplan.lakes, ...siteplan.pools] as XZ[][];
+
+export function planOpaqueAt(mask: PlanMask | null, x: number, z: number) {
+  if (!mask) return false;
+  const u = PU[0] * x + PU[1] * z + PU[2], v = PV[0] * x + PV[1] * z + PV[2];
+  if (u < 0 || u >= 1 || v < 0 || v >= 1) return false;
+  return mask.data[(Math.floor(v * mask.h) * mask.w + Math.floor(u * mask.w)) * 4 + 3] > 128;
+}
+
 export function Trees({ geo }: { geo: Geo }) {
   const ref = useRef<THREE.InstancedMesh>(null);
   const geometry = useMemo(treeGeometry, []);
+  const mask = usePlanMask();
   const items = useMemo(() => {
     const r = rng(42);
     const out: { x: number; z: number; y: number; s: number; rot: number; tint: number }[] = [];
-    const keepOut = (x: number, z: number) => TOWERS.some((t) => Math.hypot(t.x - x, t.z - z) < 48);
+    const keepOut = (x: number, z: number) =>
+      !!geo.deckAt(x, z) ||
+      planOpaqueAt(mask, x, z) ||
+      sitePolys.some((p) => pointInPolygon(x, z, p)) ||
+      TOWERS.some((t) => Math.hypot(t.x - x, t.z - z) < 48);
     for (const poly of geo.wood) {
       let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
       for (const [x, z] of poly) {
@@ -59,7 +95,7 @@ export function Trees({ geo }: { geo: Geo }) {
       }
     }
     return out.slice(0, 14000);
-  }, [geo]);
+  }, [geo, mask]);
 
   useLayoutEffect(() => {
     const m = ref.current;
@@ -80,7 +116,7 @@ export function Trees({ geo }: { geo: Geo }) {
   }, [items]);
 
   return (
-    <instancedMesh ref={ref} args={[geometry, undefined, items.length]} castShadow receiveShadow frustumCulled={false} raycast={() => null}>
+    <instancedMesh key={items.length} ref={ref} args={[geometry, undefined, items.length]} castShadow receiveShadow frustumCulled={false} raycast={() => null}>
       <meshStandardMaterial vertexColors roughness={0.9} />
     </instancedMesh>
   );

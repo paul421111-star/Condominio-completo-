@@ -253,6 +253,8 @@ button { font: inherit; color: inherit; cursor: pointer; border: 0; background: 
 .pill-block.is-active span { color: #e6ffee; }
 .pill-gate { flex-direction: column; gap: 0; align-items: flex-start; background: rgba(27, 37, 80, 0.86); padding: 4px 9px; font-size: 11px; }
 .pill-gate span { font-size: 9.5px; color: var(--yellow); }
+.pill-main-gate { background: rgba(91, 144, 169, 0.95); font-size: 12px; padding: 5px 11px; }
+.pill-main-gate span { color: #fff7d6; }
 .pill-road { background: rgba(20, 24, 32, 0.9); }
 .pill-road svg { color: var(--yellow); }
 .pill-road div { display: flex; flex-direction: column; }

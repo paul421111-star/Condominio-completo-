@@ -6,11 +6,12 @@ import { useStore } from '../store';
 import type { PlacedTower } from './Towers';
 import type { Parity, TowerTemplate } from './towerModel';
 import { DISC_R, SKIRT_DEPTH } from './Terrain';
+import siteplan from '../data/siteplan.json';
 
 const ROADS: { match: RegExp; title: string; sub: string }[] = [
-  { match: /Régis Bittencourt/, title: 'BR-116', sub: 'Rodovia Régis Bittencourt' },
-  { match: /^Estrada São Judas/, title: 'Estrada São Judas', sub: 'Acesso G12 · G14 · G16 · G18' },
-  { match: /^Avenida João Paulo I$/, title: 'Av. João Paulo I', sub: 'Acesso G13 · G15 · G17' },
+  { match: /Régis Bittencourt/, title: 'BR-116', sub: 'Rodovia Régis Bittencourt · Portaria 02' },
+  { match: /^Estrada São Judas/, title: 'Estrada São Judas', sub: 'Portaria 01' },
+  { match: /^Avenida João Paulo I$/, title: 'Av. João Paulo I', sub: 'Portaria 03' },
   { match: /Rodoanel/, title: 'Rodoanel', sub: 'Mário Covas · SP-021' },
 ];
 
@@ -88,8 +89,17 @@ export function Labels({ geo, placed, templates }: { geo: Geo; placed: PlacedTow
       {GROUPS.map((g) => (
         <Html key={`p${g.id}`} position={[g.pin[0], geo.heightAt(g.pin[0], g.pin[1]) + 8, g.pin[1]]} center zIndexRange={[8, 0]}>
           <div className="pill pill-gate">
-            <b>Portaria {GROUP_BY_ID[g.id].name.replace('Grupo ', 'G')}</b>
-            <span>Social + serviços</span>
+            <b>Portaria social {GROUP_BY_ID[g.id].name.replace('Grupo ', 'G')}</b>
+            <span>Moradores · visitantes e serviços</span>
+          </div>
+        </Html>
+      ))}
+
+      {siteplan.gates.map((g) => (
+        <Html key={g.id} position={[g.x, geo.heightAt(g.x, g.z) + 14, g.z]} center zIndexRange={[8, 0]}>
+          <div className="pill pill-gate pill-main-gate">
+            <b>{g.name}</b>
+            <span>{g.street}</span>
           </div>
         </Html>
       ))}

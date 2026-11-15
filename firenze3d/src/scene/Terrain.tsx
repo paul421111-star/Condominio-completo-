@@ -2,48 +2,41 @@ import { useMemo } from 'react';
 import * as THREE from 'three';
 import { useTexture } from '@react-three/drei';
 import { assetUrl, type Geo } from '../lib/geo';
+import siteplan from '../data/siteplan.json';
+import { makeGroundMaterial, preparePlanTexture } from './groundMaterial';
 
 export const DISC_R = 1250;
-const RINGS = 110;
-const SEGS = 220;
+const RINGS = 220;
+const SEGS = 480;
 export const SKIRT_DEPTH = 26;
-
-/** Leve dessaturação e tom frio, no estilo da cidade 3D do Oceanos. */
-function gradeSatellite(m: THREE.MeshStandardMaterial) {
-  m.onBeforeCompile = (s) => {
-    s.fragmentShader = s.fragmentShader.replace(
-      '#include <map_fragment>',
-      `#include <map_fragment>
-  float lum = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
-  diffuseColor.rgb = mix(vec3(lum), diffuseColor.rgb, 0.78) * vec3(0.98, 1.0, 1.05);
-  diffuseColor.rgb = pow(diffuseColor.rgb, vec3(0.92));`,
-    );
-  };
-}
+/** O terreno sob a laje do pódio fica abaixo dela, para a laje cobrir sem z-fighting. */
+const UNDER_DECK = 0.8;
 
 export function Terrain({ geo }: { geo: Geo }) {
-  const tex = useTexture(assetUrl(geo.sat.url));
+  const [tex, plan] = useTexture([assetUrl(geo.sat.url), assetUrl(siteplan.plan.url)]);
   tex.colorSpace = THREE.SRGBColorSpace;
   tex.anisotropy = 16;
+  preparePlanTexture(plan);
 
   const { top, skirt, minY } = useMemo(() => {
-    const { minX, maxX, minZ, maxZ } = geo.sat;
     const pos: number[] = [];
-    const uv: number[] = [];
     const idx: number[] = [];
-    pos.push(0, geo.heightAt(0, 0), 0);
-    uv.push((0 - minX) / (maxX - minX), 1 - (0 - minZ) / (maxZ - minZ));
+    const surface = (x: number, z: number) => {
+      const d = geo.deckAt(x, z);
+      return d ? Math.min(geo.naturalAt(x, z), d.level - UNDER_DECK) : geo.naturalAt(x, z);
+    };
+    pos.push(0, surface(0, 0), 0);
     let minY = Infinity;
+    // Anéis mais densos no miolo (condomínio) e mais espaçados na borda.
     for (let r = 1; r <= RINGS; r++) {
-      const rad = (r / RINGS) * DISC_R;
+      const rad = Math.pow(r / RINGS, 1.35) * DISC_R;
       for (let s = 0; s < SEGS; s++) {
         const a = (s / SEGS) * Math.PI * 2;
         const x = Math.cos(a) * rad;
         const z = Math.sin(a) * rad;
-        const y = geo.heightAt(x, z);
+        const y = surface(x, z);
         minY = Math.min(minY, y);
         pos.push(x, y, z);
-        uv.push((x - minX) / (maxX - minX), 1 - (z - minZ) / (maxZ - minZ));
       }
     }
     const v = (r: number, s: number) => (r === 0 ? 0 : 1 + (r - 1) * SEGS + (s % SEGS));
@@ -56,7 +49,6 @@ export function Terrain({ geo }: { geo: Geo }) {
     }
     const top = new THREE.BufferGeometry();
     top.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
-    top.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
     top.setIndex(idx);
     top.computeVertexNormals();
 
@@ -67,7 +59,7 @@ export function Terrain({ geo }: { geo: Geo }) {
     for (let s = 0; s <= SEGS; s++) {
       const a = (s / SEGS) * Math.PI * 2;
       const x = Math.cos(a) * DISC_R, z = Math.sin(a) * DISC_R;
-      sp.push(x, geo.heightAt(x, z), z, x, floorY, z);
+      sp.push(x, geo.naturalAt(x, z), z, x, floorY, z);
     }
     for (let s = 0; s < SEGS; s++) {
       const a = s * 2, b = a + 1, c = a + 2, d = a + 3;
@@ -80,11 +72,7 @@ export function Terrain({ geo }: { geo: Geo }) {
     return { top, skirt, minY };
   }, [geo]);
 
-  const mat = useMemo(() => {
-    const m = new THREE.MeshStandardMaterial({ map: tex, roughness: 0.95, metalness: 0 });
-    gradeSatellite(m);
-    return m;
-  }, [tex]);
+  const mat = useMemo(() => makeGroundMaterial(geo, tex, plan), [geo, tex, plan]);
 
   return (
     <group>
