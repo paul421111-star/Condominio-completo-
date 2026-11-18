@@ -128,6 +128,8 @@ export function Toolbar() {
   const setMode = useStore((s) => s.setMode);
   const layers = useStore((s) => s.layers);
   const toggle = useStore((s) => s.toggleLayer);
+  const ground = useStore((s) => s.ground);
+  const setGround = useStore((s) => s.setGround);
   const flyHome = useStore((s) => s.flyHome);
   const hasKey = !!getGoogleKey();
 
@@ -149,6 +151,14 @@ export function Toolbar() {
   return (
     <div className="hud-tr">
       <div className="glass seg">
+        <button title="Implantação viária, chão plano, sem a malha do mapa" className={ground === 'planta' ? 'is-on' : ''} onClick={() => setGround('planta')}>
+          Planta
+        </button>
+        <button title="Satélite e cidade 3D do Google" className={ground === 'mapa' ? 'is-on' : ''} onClick={() => setGround('mapa')}>
+          Mapa
+        </button>
+      </div>
+      <div className="glass seg">
         {MODES.map((m) => (
           <button key={m.id} title={m.hint} className={mode === m.id ? 'is-on' : ''} onClick={() => setMode(m.id)}>
             {m.label}
@@ -164,7 +174,15 @@ export function Toolbar() {
             <svg viewBox="0 0 24 24"><path d={i.d} /></svg>
           </button>
         ))}
-        <button title={hasKey ? 'Cidade 3D fotorrealista (Google)' : 'Ativar cidade 3D fotorrealista (requer chave Google)'} className={hasKey && layers.city3d ? 'is-on' : ''} onClick={askKey}>
+        <button title={hasKey ? 'Cidade 3D fotorrealista (Google). Abre o modo Mapa.' : 'Ativar cidade 3D fotorrealista (requer chave Google)'} className={hasKey && ground === 'mapa' && layers.city3d ? 'is-on' : ''} onClick={() => {
+          if (!hasKey) { askKey(); return; }
+          if (ground !== 'mapa') {
+            setGround('mapa');
+            if (!layers.city3d) toggle('city3d');
+            return;
+          }
+          toggle('city3d');
+        }}>
           <svg viewBox="0 0 24 24"><path d="M3 21V9l5-3v15M8 21V4l7 3v14M15 21V10l6 2v9M2 21h20" /></svg>
         </button>
       </div>

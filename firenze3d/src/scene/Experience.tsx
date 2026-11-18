@@ -24,6 +24,7 @@ function CameraRig({ placed, templates, target }: { placed: PlacedTower[]; templ
   const tower = useStore((s) => s.tower);
   const nonce = useStore((s) => s.flyNonce);
   const phase = useStore((s) => s.phase);
+  const ground = useStore((s) => s.ground);
 
   useEffect(() => {
     const c = controls.current;
@@ -32,8 +33,12 @@ function CameraRig({ placed, templates, target }: { placed: PlacedTower[]; templ
       c.setLookAt(HOME.pos.x * 1.6, HOME.pos.y * 1.4, HOME.pos.z * 1.6, HOME.target.x, HOME.target.y, HOME.target.z, false);
       return;
     }
+    if (ground === 'planta') {
+      c.setLookAt(-30, 1720, 460, -40, 30, -90, true);
+      return;
+    }
     c.setLookAt(HOME.pos.x, HOME.pos.y, HOME.pos.z, HOME.target.x, HOME.target.y, HOME.target.z, true);
-  }, [phase, nonce]);
+  }, [phase, nonce, ground]);
 
   useEffect(() => {
     const c = controls.current;
@@ -122,8 +127,9 @@ function World({ geo }: { geo: Geo }) {
   const [templates, setTemplates] = useState<Record<Parity, TowerTemplate> | null>(null);
   const target = useRef(new THREE.Vector3());
   const layers = useStore((s) => s.layers);
+  const ground = useStore((s) => s.ground);
   const gkey = getGoogleKey();
-  const city3d = layers.city3d && !!gkey;
+  const city3d = ground === 'mapa' && layers.city3d && !!gkey;
 
   const onPlaced = useCallback((p: PlacedTower[], t: Record<Parity, TowerTemplate>) => {
     setPlaced(p);
@@ -138,7 +144,7 @@ function World({ geo }: { geo: Geo }) {
       {city3d && templates ? (
         <GoogleTiles apiKey={gkey} geo={geo} placed={placed} templates={templates} />
       ) : (
-        <Terrain geo={geo} />
+        <Terrain geo={geo} flat={ground === 'planta'} />
       )}
       {!city3d && <SitePlan geo={geo} />}
       {!city3d && <Neighborhood geo={geo} />}

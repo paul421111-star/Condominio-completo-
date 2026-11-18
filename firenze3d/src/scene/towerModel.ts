@@ -13,8 +13,6 @@ const EXTERIOR: Record<Parity, Set<string>> = {
   ]),
 };
 const GLASS = new Set(['Vidro_fachada', 'Vidro_varanda', 'Vidro_azul', 'Vidro_guarda_corpo']);
-/** Caixilhos: ~40% dos triângulos, invisíveis de longe. */
-const DETAIL = new Set(['Esquadria_escura', 'Esquadrias']);
 
 export interface Lot {
   name: string;
@@ -190,23 +188,12 @@ export function buildTemplate(scene: THREE.Object3D, parity: Parity): TowerTempl
     m.get(k)!.push(g);
   };
 
-  // Pavimento-tipo de referência para o LOD distante, esticado sobre todos os andares-tipo.
-  const typical = Math.round(floors * 0.4);
   byFloor.forEach((list, floor) => {
     for (const { name, geo } of list) {
       geo.translate(0, lift, 0);
       push(nearParts, name, geo);
-      if (DETAIL.has(name)) continue;
-      if (floor === 0 || floor > floors) {
-        push(farParts, name, geo);
-      } else if (floor === typical) {
-        const g = geo.clone();
-        const y0 = floor1Y + (typical - 1) * floorH;
-        g.translate(0, -y0, 0);
-        g.scale(1, floors, 1);
-        g.translate(0, floor1Y, 0);
-        push(farParts, name, g);
-      }
+      // O mesmo modelo em qualquer distância: o andar esticado apagava a fachada real.
+      push(farParts, name, geo.clone());
     }
   });
 

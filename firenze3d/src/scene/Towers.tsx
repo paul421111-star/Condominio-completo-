@@ -9,8 +9,8 @@ import { buildTemplate, makeGhostDepthMaterial, makeGhostMaterial, patchDepth, t
 
 const NEAR_DIST = 560;
 const FULL = 1e5;
-const SELECTED_TINT = new THREE.Color('#9ff0b8');
-const HOVER_TINT = new THREE.Color('#cfe3ff');
+const SELECTED_TINT = new THREE.Color('#ffffff');
+const HOVER_TINT = new THREE.Color('#ffffff');
 const GROUP_TINT = new THREE.Color('#ffffff');
 const WHITE = new THREE.Color('#ffffff');
 

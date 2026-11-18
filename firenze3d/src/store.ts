@@ -51,6 +51,10 @@ interface State {
   layers: { labels: boolean; shadows: boolean; trees: boolean; sunPath: boolean; city3d: boolean };
   toggleLayer: (k: keyof State['layers']) => void;
 
+  /** Planta: implantação viária plana. Mapa: satélite ou cidade 3D. */
+  ground: 'planta' | 'mapa';
+  setGround: (g: 'planta' | 'mapa') => void;
+
   weather: Weather | null;
   setWeather: (w: Weather | null) => void;
 
@@ -95,8 +99,15 @@ export const useStore = create<State>((set) => ({
   setLive: (live) => set(live ? { live, time: Date.now(), playing: false } : { live }),
   setPlaying: (playing) => set(playing ? { playing, live: false } : { playing }),
 
-  layers: { labels: true, shadows: true, trees: true, sunPath: true, city3d: true },
+  layers: { labels: true, shadows: true, trees: false, sunPath: true, city3d: true },
   toggleLayer: (k) => set((s) => ({ layers: { ...s.layers, [k]: !s.layers[k] } })),
+
+  ground: 'planta',
+  setGround: (ground) =>
+    set((s) => ({
+      ground,
+      layers: { ...s.layers, trees: ground === 'mapa' },
+    })),
 
   weather: null,
   setWeather: (weather) => set({ weather }),

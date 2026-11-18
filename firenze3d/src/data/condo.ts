@@ -35,11 +35,11 @@ export interface GroupDef {
 
 const EVEN = {
   floors: 28, aptsPerFloor: 8, aptsPerTower: 224, towers: 6, totalApts: 1344,
-  area: '≈ 60 m²', typology: '2 dormitórios', subsolos: '2 a 4 subsolos',
+  area: '81,45 m²', typology: '2 dormitórios (1 suíte)', subsolos: '2 a 4 subsolos',
 };
 const ODD = {
   floors: 36, aptsPerFloor: 4, aptsPerTower: 144, towers: 7, totalApts: 1008,
-  area: '125 m²', typology: '3 dormitórios (suíte)', subsolos: '3 subsolos',
+  area: '125 m²', typology: '3 dormitórios (1 suíte)', subsolos: '3 subsolos',
 };
 
 const ADDRESS: Record<GroupId, string> = {
@@ -49,7 +49,7 @@ const ADDRESS: Record<GroupId, string> = {
   15: 'Av. João Paulo I, 1973 · Jardim São Luiz',
   16: 'Estrada São Judas, 190 · Parque Esplanada',
   17: 'Av. João Paulo I, 1973 · Jardim São Luiz',
-  18: 'Estrada São Judas · junto à BR-116',
+  18: 'Estrada São Judas, 190 · Parque Esplanada',
 };
 
 /** Portaria principal mais próxima de cada grupo, segundo os totens de direção (PE05). */
