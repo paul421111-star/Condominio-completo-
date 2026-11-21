@@ -5,6 +5,7 @@ import { describeWeather, fetchWeather } from '../lib/weather';
 import { fmtDate, fmtTime, localMidnight, minutesOfDay, presetDate, sunAltitude, sunTimes } from '../lib/sun';
 import { OBRA_STAGES, embedded, openInQualiObra } from '../lib/qualiobra';
 import { getGoogleKey } from '../scene/GoogleTiles';
+import { assetUrl } from '../lib/geo';
 
 const fmt = (n: number) => n.toLocaleString('pt-BR');
 
@@ -44,6 +45,7 @@ export function BrandCard() {
       <div className="glass brand-card" onClick={flyHome} role="button">
         <span className="brand-mark sm">VIDA<b>NOVA</b></span>
         <span className="brand-sep" />
+        <img className="brand-seal" src={assetUrl('brand/chvn-mark.svg')} alt="Selo Cooperativa Habitacional Vida Nova" />
         <div>
           <b className="brand-title">Residencial <em>Parque Firenze</em></b>
           <small>{SITE.city} · {TOTALS.towers} torres · {fmt(TOTALS.apts)} aptos</small>
